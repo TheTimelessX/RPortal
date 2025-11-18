@@ -1,0 +1,29 @@
+{
+  "name": "rportal",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheTimelessX/RPortal.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/TheTimelessX/RPortal/issues"
+  },
+  "homepage": "https://github.com/TheTimelessX/RPortal#readme",
+  "dependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node-telegram-bot-api": "^0.64.12",
+    "@types/socket.io": "^3.0.1",
+    "better-sqlite3": "^12.4.1",
+    "node-telegram-bot-api": "^0.66.0",
+    "socket.io": "^4.8.1"
+  }
+}
