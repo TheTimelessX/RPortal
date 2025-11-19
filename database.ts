@@ -94,48 +94,48 @@ export class UserDatabase {
         })
     }
 
-    async expirePort(id: number, name: string, callback: (data: any) => void){
-        await this.getUserById(id, async (user) => {
-            if (!user){
-                return callback({ status: false, message: "user does not exist" });
-            }
+    // async expirePort(id: number, name: string, callback: (data: any) => void){
+    //     await this.getUserById(id, async (user) => {
+    //         if (!user){
+    //             return callback({ status: false, message: "user does not exist" });
+    //         }
 
-            for (const port of user.port){
-                if (port.name === name){
-                    port.expired = true;
-                    const stmt = this.db.prepare("UPDATE users SET port = @port WHERE id = @id");
-                    stmt.run({ port: JSON.stringify(user.port), id });
-                    return callback({ status: true });
-                }
-            }
+    //         for (const port of user.port){
+    //             if (port.name === name){
+    //                 port.expired = true;
+    //                 const stmt = this.db.prepare("UPDATE users SET port = @port WHERE id = @id");
+    //                 stmt.run({ port: JSON.stringify(user.port), id });
+    //                 return callback({ status: true });
+    //             }
+    //         }
 
-            return callback({ status: false, message: "user does not have this port" });
-        })
-    }
+    //         return callback({ status: false, message: "user does not have this port" });
+    //     })
+    // }
 
-    async addExpire(id: number, name: string, ms: number, callback: (data: any) => void){
-        await this.getUserById(id, async (user) => {
-            if (!user){
-                return callback({ status: false, message: "user does not exist" });
-            }
+    // async addExpire(id: number, name: string, ms: number, callback: (data: any) => void){
+    //     await this.getUserById(id, async (user) => {
+    //         if (!user){
+    //             return callback({ status: false, message: "user does not exist" });
+    //         }
 
-            for (const port of user.port){
-                if (port.name === name){
-                    port.expires_at += ms;
-                    if (port.expires_at > Date.now()){
-                        port.expired = false;
-                    } else {
-                        port.expired = true;
-                    }
-                    const stmt = this.db.prepare("UPDATE users SET port = @port WHERE id = @id");
-                    stmt.run({ port: JSON.stringify(user.port), id });
-                    return callback({ status: true });
-                }
-            }
+    //         for (const port of user.port){
+    //             if (port.name === name){
+    //                 port.expires_at += ms;
+    //                 if (port.expires_at > Date.now()){
+    //                     port.expired = false;
+    //                 } else {
+    //                     port.expired = true;
+    //                 }
+    //                 const stmt = this.db.prepare("UPDATE users SET port = @port WHERE id = @id");
+    //                 stmt.run({ port: JSON.stringify(user.port), id });
+    //                 return callback({ status: true });
+    //             }
+    //         }
 
-            return callback({ status: false, message: "user does not have this port" });
-        })
-    }
+    //         return callback({ status: false, message: "user does not have this port" });
+    //     })
+    // }
 
     async ban(id: number, callback: (data: any) => void){
         await this.getUserById(id, async (user) => {
@@ -173,13 +173,13 @@ export class UserDatabase {
         return result;
     }
 
-    async addPort(id: number, port_info: { bought_on: number, expires_at: number, token: string, chat: number, type: string, domain_type: string }, callback: (data: any) => void){
+    async addPort(id: number, port_info: { bought_on: number, token: string, chat: number, type: string, domain_type: string }, callback: (data: any) => void){
         await this.getUserById(id, async (user) => {
             if (!user){
                 return callback({ status: false, message: "user does not exist" });
             }
 
-            const pinfo = { ...port_info, name: this.createstring, expired: false };
+            const pinfo = { ...port_info, name: this.createstring };
             user.port.push(pinfo);
             const stmt = this.db.prepare("UPDATE users SET port = @port WHERE id = @id");
             stmt.run({ id, port: JSON.stringify(pinfo) });
@@ -235,7 +235,7 @@ export class DomainDatabase {
     }
 
     async setup(){
-        this.db.exec("CREATE TABLE IF NOT EXISTS domains (id TEXT PRIMARY KEY, durl TEXT, private_key TEXT, contains TEXT)");
+        this.db.exec("CREATE TABLE IF NOT EXISTS domains (id TEXT PRIMARY KEY, durl TEXT, private_key TEXT, contains TEXT, includes)");
     }
 
     get getuuid(){
@@ -335,11 +335,12 @@ export class DomainDatabase {
                 id: this.getuuid,
                 contains: [],
                 durl: domain_url,
-                private_key
+                private_key,
+                includes: []
             };
 
-            const stmt = this.db.prepare("INSERT INTO domains (durl, private_key, id, contains) VALUES (@durl, @private_key, @id, @contains)");
-            stmt.run({ id: domain_info.id, contains: "[]", durl: domain_url, private_key });
+            const stmt = this.db.prepare("INSERT INTO domains (durl, private_key, id, contains, includes) VALUES (@durl, @private_key, @id, @contains, @includes)");
+            stmt.run({ id: domain_info.id, contains: "[]", durl: domain_url, private_key, includes:  "[]" });
 
             return callback({ status: true, domain: domain_info });
         })
@@ -367,6 +368,42 @@ export class DomainDatabase {
 
             const stmt = this.db.prepare("DELETE FROM domains WHERE id = @id");
             stmt.run({ id });
+
+            return callback({ status: true });
+        })
+    }
+
+    async addInclude(id: string, include_name: string, callback: (data: any) => void){
+        await this.getDomainByID(id, async (fdom) => {
+            if (!fdom){
+                return callback({ status: false, message: "domain id does exist" });
+            }
+
+            if (fdom.includes.includes(include_name)){
+                return callback({ status: false, message: "include name does exist" });
+            }
+
+            fdom.includes.push(include_name);
+            const stmt = this.db.prepare("UPDATE domains SET includes = @inc WHERE id = @id");
+            stmt.run({ id, includes: JSON.stringify(fdom.includes) });
+
+            return callback({ status: true });
+        })
+    }
+    
+    async removeInclude(id: string, include_name: string, callback: (data: any) => void){
+        await this.getDomainByID(id, async (fdom) => {
+            if (!fdom){
+                return callback({ status: false, message: "domain id does exist" });
+            }
+
+            if (!fdom.includes.includes(include_name)){
+                return callback({ status: false, message: "include name does not exist" });
+            }
+
+            fdom.includes.splice(fdom.includes.indexOf(include_name), 1);
+            const stmt = this.db.prepare("UPDATE domains SET includes = @inc WHERE id = @id");
+            stmt.run({ id, includes: JSON.stringify(fdom.includes) });
 
             return callback({ status: true });
         })

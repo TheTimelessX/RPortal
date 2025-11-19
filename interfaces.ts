@@ -1,8 +1,6 @@
 export interface Port {
     name: string;
     bought_on: number;
-    expires_at: number;
-    expired: boolean;
     token: string;
     chat: number;
     type: string;
@@ -21,4 +19,5 @@ export interface Domain {
     durl: string;
     private_key: string;
     contains: string[]; // list of port names bought this domain
+    includes: string[]; // list of includes file
 }
