@@ -21,12 +21,14 @@
   "dependencies": {
     "@types/axios": "^0.9.36",
     "@types/better-sqlite3": "^7.6.13",
+    "@types/express": "^5.0.5",
+    "@types/node-emoji": "^1.8.2",
     "@types/node-telegram-bot-api": "^0.64.12",
-    "@types/socket.io": "^3.0.1",
     "axios": "^1.13.2",
     "better-sqlite3": "^12.4.1",
+    "express": "^5.1.0",
+    "node-emoji": "^2.2.0",
     "node-telegram-bot-api": "^0.66.0",
-    "socket.io": "^4.8.1",
     "tronweb": "^6.1.0"
   }
 }

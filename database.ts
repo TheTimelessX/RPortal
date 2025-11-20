@@ -277,6 +277,18 @@ export class DomainDatabase {
         })
     }
 
+    async getDomainByPrivateKey(private_key: string, callback: (foundDomain: int.Domain | null) => void){
+        await this.getDomains(async (domains) => {
+            for (const dom of domains){
+                if (dom.private_key === private_key){
+                    return callback(dom);
+                }
+            }
+
+            return callback(null);
+        })
+    }
+
     async getDomainContainersLength(id: string, callback: (foundDomain: number | null) => void){
         await this.getDomains(async (domains) => {
             for (const dom of domains){

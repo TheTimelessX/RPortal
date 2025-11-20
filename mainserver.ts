@@ -397,11 +397,12 @@ bot.on("message", async (message) => {
                 if (!/^https?:\/\/(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[^\s]*)?$/.test(message.text)){return;}
 
                 const _url = new URL(message.text);
-                await domaindb.addDomain(_url.origin, "", async (data) => {
+                const pk = crypto.randomUUID();
+                await domaindb.addDomain(_url.origin, pk, async (data) => {
                     if (data.status){
                         return bot.sendMessage(
                             message.chat.id,
-                            `✅ | دامین جدید ست شد\n\n🔗 | لینک : <code>${message.text}</code>\n✏️ | کلید/آیدی : <code>${data.domain.id}</code>`,
+                            `✅ | دامین جدید ست شد\n\n🔗 | لینک : <code>${message.text}</code>\n✏️ | کلید/آیدی : <code>${data.domain.id}</code>\n🪄 | کلید رد و بدل کردن اطلاعات : <code>${pk}</code>`,
                             {
                                 reply_to_message_id: message.message_id,
                                 parse_mode: "HTML"
@@ -883,7 +884,7 @@ bot.on("callback_query", async (call) => {
                     let txt = `📃 | تعداد دامین ها : ${domains.length}\n`;
                     
                     for (const domain of domains){
-                        txt += `\n🔗 | لینک : <code>${domain.durl}</code>\n📦 | قالب ها [ ${domain.contains.length} ] : ${domain.contains.map(cnt => `<code>${cnt}</code>`).join(", ")}\n🌀 | پورت های متصل [ ${domain.includes.length} ] : ${domain.includes.map(inc => `<code>${inc}</code>`).join(", ")}\n🔮 | آیدی : <code>${domain.id}</code>\n`;
+                        txt += `\n🔗 | لینک : <code>${domain.durl}</code>\n📦 | قالب ها [ ${domain.contains.length} ] : ${domain.contains.map(cnt => `<code>${cnt}</code>`).join(", ")}\n🌀 | پورت های متصل [ ${domain.includes.length} ] : ${domain.includes.map(inc => `<code>${inc}</code>`).join(", ")}\n🔮 | آیدی : <code>${domain.id}</code>\n✏️ | private key : <code>${domain.private_key}</code>\n`;
                     }
 
                     const _chunk = safeTelegramChunk(txt, 4090);
