@@ -400,15 +400,26 @@ var DomainDatabase = /** @class */ (function () {
     });
     DomainDatabase.prototype.getDomains = function (callback) {
         return __awaiter(this, void 0, void 0, function () {
-            var doms, _i, _a, dom;
-            return __generator(this, function (_b) {
-                doms = [];
-                for (_i = 0, _a = this.db.prepare("SELECT * FROM domains").all(); _i < _a.length; _i++) {
-                    dom = _a[_i];
-                    dom.contains = JSON.parse(dom.contains);
-                    doms.push(dom);
+            var doms, rows, _i, rows_1, dom;
+            return __generator(this, function (_a) {
+                try {
+                    doms = [];
+                    rows = this.db.prepare("SELECT * FROM domains").all();
+                    for (_i = 0, rows_1 = rows; _i < rows_1.length; _i++) {
+                        dom = rows_1[_i];
+                        // مطمئن شو contains و includes همیشه آرایه هستند
+                        dom.contains = dom.contains ? JSON.parse(dom.contains) : [];
+                        dom.includes = dom.includes ? JSON.parse(dom.includes) : [];
+                        doms.push(dom);
+                    }
+                    // ارسال نتیجه به callback
+                    callback(doms);
                 }
-                return [2 /*return*/, callback(doms)];
+                catch (err) {
+                    console.error("Error in getDomains:", err);
+                    callback([]); // حتی در صورت خطا، callback با آرایه خالی فراخوانی شود
+                }
+                return [2 /*return*/];
             });
         });
     };

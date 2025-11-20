@@ -1,6 +1,6 @@
-const main_token: string = "";
-const bot_wallet: string = "";
-const admins: number[]   = [];
+const main_token: string = "8441670596:AAFQVWOQI1c7TsG9sBrkBQiGp4QzEba6LyI";
+const bot_wallet: string = "TCymMoexTgT2J6UMLq7rScRdj3BjhTM6kL";
+const admins: number[]   = [8086331339];
 
 import { UserDatabase, HashDatabase, DomainDatabase } from "./database";
 import telegram from "node-telegram-bot-api";
@@ -43,6 +43,7 @@ const translationTable = {
 };
 
 bot.on("message", async (message) => {
+    console.log(message);
     if (!message.from) return;
     if (message.chat.type === 'channel') return;
     message.text = message.text ? message.text : "";
@@ -59,7 +60,7 @@ bot.on("message", async (message) => {
 
             return await bot.sendMessage(
                 message.chat.id,
-                `🧽 | ربات خرید درگاه 𝚁 𝙿𝚘𝚛𝚝𝚊𝚕\n\n📁 | قالب: ${ghalebs.size} | دامین: ${domains.length}\n🖥️ | تضمین 3 روز قیمت ${price} ترون\n💰 | ولت بات: </code>${bot_wallet}</code>`,
+                `🧽 | ربات خرید درگاه 𝚁 𝙿𝚘𝚛𝚝𝚊𝚕\n\n📁 | قالب: ${ghalebs.size} | دامین: ${domains.length}\n🖥️ | تضمین 3 روز قیمت ${price} ترون\n💰 | ولت بات: <code>${bot_wallet}</code>`,
                 {
                     parse_mode: "HTML",
                     reply_to_message_id: message.message_id,
@@ -185,6 +186,7 @@ bot.on("message", async (message) => {
                             [{ text: build(`🔗 add domain 🔗`), callback_data: `adddomain_${message.from.id}` }, { text: build(`✂️ del domain ✂️`), callback_data: `deldomain_${message.from.id}` }],
                             [{ text: build(`🔮 add skin 🔮`), callback_data: `addskin_${message.from.id}` }, { text: build(`🪓 del skin 🪓`), callback_data: `delskin_${message.from.id}` }],
                             [{ text: build(`💰 change price 💰`), callback_data: `changeprice_${message.from.id}` }, { text: build(`🌀 domains 🌀`), callback_data: `cdomains_${message.from.id}` }],
+                            [{ text: build(`🪙 free coins 🪙`), callback_data: `freecoins_${message.from.id}` }]
                         ]
                     }
                 }
@@ -517,7 +519,10 @@ bot.on("message", async (message) => {
                         )
                     }
 
-                    dom.contains.push(xpath.name);
+                    await domaindb.addContainer(xpath.name, dom.id, async () => {})
+
+                    got.delete(message.from!.id);
+                    opt.delete(message.from!.id);
 
                     return await bot.sendMessage(
                         message.chat.id,
@@ -576,7 +581,10 @@ bot.on("message", async (message) => {
                         )
                     }
 
-                    dom.contains.splice(dom.contains.indexOf(xpath.name), 1);
+                    await domaindb.removeContainer(xpath.name, dom.id, async () => {})
+
+                    got.delete(message.from!.id);
+                    opt.delete(message.from!.id);
 
                     return await bot.sendMessage(
                         message.chat.id,
@@ -607,6 +615,9 @@ bot.on("message", async (message) => {
                     }
                 )
             })
+        } else if (userstep === "freecoins"){
+            if (!/^\d+$/.test(message.text)){return;}
+            
         }
     }
 })
@@ -622,61 +633,123 @@ bot.on("callback_query", async (call) => {
 
     if (call.from.id === uid){
         switch (mode) {
+            // case "buy":
+            //     await userdb.getUserById(call.from.id, async (user) => {
+            //         if (!user){
+            //             return await bot.answerCallbackQuery(
+            //                 call.id,
+            //                 {
+            //                     text: "اول بات رو استارت کنید",
+            //                     show_alert: true
+            //                 }
+            //             )
+            //         }
+
+            //         if (user.ban){
+            //             return await bot.answerCallbackQuery(
+            //                 call.id,
+            //                 {
+            //                     text: "متاسفانه شما بن شده اید",
+            //                     show_alert: true
+            //                 }
+            //             )
+            //         }
+
+            //         domaindb.getDomains(async (domains) => {
+            //             const _endpoints = new Map<string, { endpoint: string, href: string }>();
+
+            //             if (que.has(call.from.id)){
+            //                 que.delete(call.from.id);
+            //             }
+
+            //             for (const _dom of domains){
+            //                 const theurl = new URL(_dom.durl);
+            //                 const orgspl = theurl.origin.split(".");
+            //                 _endpoints.set(_dom.id, { endpoint: orgspl[orgspl.length - 1], href: theurl.href });
+            //             }
+
+            //             const thok: InlineKeyboardButton[] = [];
+
+            //             for (const _k of _endpoints.entries()){
+            //                 thok.push({ text: _k[1].endpoint, callback_data: `add_${call.from.id}_${_k[0]}` });
+            //             }
+
+            //             const chunked = chunkArray(Array.from(thok), 2);
+            //             console.log("domains:", domains);
+            //             console.log("endpointsMapBeforeLoop:", _endpoints.size);
+            //             await bot.editMessageText(
+            //                 `🪒 | دریافت درگاه های موجود\n\n⚠️ | چون بات به api وصله قیمت ها ذره ای کمتر قبول نمیشن, پس کامل پول رو واریز کنید`,
+            //                 {
+            //                     chat_id: real_message.chat.id,
+            //                     message_id: real_message.message_id,
+            //                     reply_markup: {
+            //                         inline_keyboard: chunked
+            //                     }
+            //                 }
+            //             )
+            //         })
+            //     })
+            //     break;
+
             case "buy":
-                await userdb.getUserById(call.from.id, async (user) => {
-                    if (!user){
-                        return await bot.answerCallbackQuery(
-                            call.id,
-                            {
-                                text: "اول بات رو استارت کنید",
-                                show_alert: true
-                            }
-                        )
+                userdb.getUserById(call.from.id, (user) => {
+                    if (!user) {
+                        return bot.answerCallbackQuery(call.id, {
+                            text: "اول بات رو استارت کنید",
+                            show_alert: true
+                        });
                     }
 
-                    if (user.ban){
-                        return await bot.answerCallbackQuery(
-                            call.id,
-                            {
-                                text: "متاسفانه شما بن شده اید",
-                                show_alert: true
-                            }
-                        )
+                    if (user.ban) {
+                        return bot.answerCallbackQuery(call.id, {
+                            text: "متاسفانه شما بن شده اید",
+                            show_alert: true
+                        });
                     }
 
-                    await domaindb.getDomains(async (domains) => {
+                    domaindb.getDomains((domains) => {
                         const _endpoints = new Map<string, { endpoint: string, href: string }>();
 
-                        if (que.has(call.from.id)){
+                        if (que.has(call.from.id)) {
                             que.delete(call.from.id);
                         }
 
-                        for (const _dom of domains){
-                            const theurl = new URL(_dom.durl);
-                            const orgspl = theurl.origin.split(".");
-                            _endpoints.set(_dom.id, { endpoint: orgspl[orgspl.length - 1], href: theurl.href });
+                        for (const _dom of domains) {
+                            try {
+                                const theurl = new URL(_dom.durl);
+                                const orgspl = theurl.origin.split(".");
+                                _endpoints.set(_dom.id, {
+                                    endpoint: orgspl[orgspl.length - 1],
+                                    href: theurl.href
+                                });
+                            } catch (err) {
+                                console.log("Invalid URL:", _dom.durl, err);
+                            }
                         }
 
                         const thok: InlineKeyboardButton[] = [];
 
-                        for (const _k of _endpoints.entries()){
-                            thok.push({ text: _k[1].endpoint, callback_data: `add_${call.from.id}_${_k[0]}` });
-                        }
+                        _endpoints.forEach((info, _id) => {
+                            thok.push({
+                                text: info.endpoint,
+                                callback_data: `add_${call.from.id}_${_id}`
+                            });
+                        });
 
-                        const chunked = chunkArray(Array.from(thok), 2);
-                        await bot.editMessageText(
+                        const chunked = chunkArray(thok, 2);
+
+                        bot.editMessageText(
                             `🪒 | دریافت درگاه های موجود\n\n⚠️ | چون بات به api وصله قیمت ها ذره ای کمتر قبول نمیشن, پس کامل پول رو واریز کنید`,
                             {
                                 chat_id: real_message.chat.id,
                                 message_id: real_message.message_id,
-                                reply_markup: {
-                                    inline_keyboard: chunked
-                                }
+                                reply_markup: { inline_keyboard: chunked }
                             }
-                        )
-                    })
-                })
+                        ).catch(err => console.log("EDIT MESSAGE ERROR:", err));
+                    });
+                });
                 break;
+
 
             case "add":
                 const _domainid = spl[2];
@@ -715,8 +788,8 @@ bot.on("callback_query", async (call) => {
 
                         que.set(call.from.id, { domain_id: _domainid });
                         const items: InlineKeyboardButton[] = [];
-                        for (const inc of dom.includes){
-                            items.push({ text: inc, callback_data: `addskin_${call.from.id}_${inc}` })
+                        for (const inc of dom.contains){
+                            items.push({ text: inc, callback_data: `addskinformoshtari_${call.from.id}_${inc}` })
                         }
 
                         const chuncked = chunkArray(items, 2);
@@ -734,9 +807,10 @@ bot.on("callback_query", async (call) => {
                     })
                 })
                 break;
-            case "addskin":
+            case "addskinformoshtari":
                 const skin = spl[2];
                 const qdata = que.get(call.from.id)!;
+                console.log(qdata)
                 qdata.skin = skin;
                 que.set(call.from.id, qdata);
 
@@ -870,11 +944,21 @@ bot.on("callback_query", async (call) => {
                 )
                 break;
             case "changeprice":
-                got.set(call.from.id, "getprice");
+                got.set(call.from.id, "changeprice");
                 await bot.answerCallbackQuery(
                     call.id,
                     {
                         text: "قیمت جدید رو به ترون وارد بکن",
+                        show_alert: true
+                    }
+                )
+                break;
+            case "freecoins":
+                got.set(call.from.id, "freecoins");
+                await bot.answerCallbackQuery(
+                    call.id,
+                    {
+                        text: "مقدار سکه هایی که حساب رو شارژ کنه",
                         show_alert: true
                     }
                 )
@@ -884,6 +968,9 @@ bot.on("callback_query", async (call) => {
                     let txt = `📃 | تعداد دامین ها : ${domains.length}\n`;
                     
                     for (const domain of domains){
+                        domain.contains = domain.contains.length === 0 ? [] : domain.contains;
+                        domain.includes = domain.includes.length === 0 ? [] : domain.includes;
+                        console.log(typeof domain.includes);
                         txt += `\n🔗 | لینک : <code>${domain.durl}</code>\n📦 | قالب ها [ ${domain.contains.length} ] : ${domain.contains.map(cnt => `<code>${cnt}</code>`).join(", ")}\n🌀 | پورت های متصل [ ${domain.includes.length} ] : ${domain.includes.map(inc => `<code>${inc}</code>`).join(", ")}\n🔮 | آیدی : <code>${domain.id}</code>\n✏️ | private key : <code>${domain.private_key}</code>\n`;
                     }
 

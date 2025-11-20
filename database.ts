@@ -242,16 +242,26 @@ export class DomainDatabase {
         return crypto.randomUUID().split("-")[0];
     }
 
-    async getDomains(callback: (domains: int.Domain[]) => void){
-        const doms: int.Domain[] = [];
+    async getDomains(callback: (domains: int.Domain[]) => void) {
+        try {
+            const doms: int.Domain[] = [];
+            const rows = this.db.prepare("SELECT * FROM domains").all() as any[];
 
-        for (const dom of this.db.prepare("SELECT * FROM domains").all() as any[]){
-            dom.contains = JSON.parse(dom.contains);
-            doms.push(dom);
+            for (const dom of rows) {
+                // مطمئن شو contains و includes همیشه آرایه هستند
+                dom.contains = dom.contains ? JSON.parse(dom.contains) : [];
+                dom.includes = dom.includes ? JSON.parse(dom.includes) : [];
+                doms.push(dom);
+            }
+
+            // ارسال نتیجه به callback
+            callback(doms);
+        } catch (err) {
+            console.error("Error in getDomains:", err);
+            callback([]); // حتی در صورت خطا، callback با آرایه خالی فراخوانی شود
         }
-
-        return callback(doms);
     }
+
 
     async getDomainByDURL(durl: string, callback: (foundDomain: int.Domain | null) => void){
         await this.getDomains(async (domains) => {
