@@ -5,6 +5,8 @@ const admins: number[]   = [];
 import { UserDatabase, HashDatabase, DomainDatabase } from "./database";
 import telegram from "node-telegram-bot-api";
 import { InlineKeyboardButton } from "node-telegram-bot-api";
+import { getTransactionByHash } from "./tron";
+import * as trxweb from "tronweb";
 import * as fs from "fs";
 import * as path from "path";
 import * as axios from "axios";
@@ -26,10 +28,11 @@ const bot: telegram = new Telegram(main_token, { polling: true });
 const userdb = new UserDatabase();
 const hashdb = new HashDatabase();
 const domaindb = new DomainDatabase();
-const price  = parseInt(fs.readFileSync(path.join(__dirname, "price.txt")).toString());
+let   price  = parseInt(fs.readFileSync(path.join(__dirname, "price.txt")).toString());
 const que    = new Map<number, { domain_id?: string, skin?: string }>();
 const got    = new Map<number, string>();
 const inf    = new Map<number, { token?: string, chat?: number }>();
+const opt    = new Map<number, { domain_id?: string, skin_name?: string }>();
 const translationTable = {
     'q': 'ǫ', 'w': 'ᴡ', 'e': 'ᴇ', 'r': 'ʀ', 't': 'ᴛ',
     'y': 'ʏ', 'u': 'ᴜ', 'i': 'ɪ', 'o': 'ᴏ', 'p': 'ᴘ',
@@ -53,7 +56,7 @@ bot.on("message", async (message) => {
                     ghalebs.add(__d);
                 }
             }
-            //const _txt = `📥 | خرید: ${Object.entries(buyTable).map(([k , v]) => `🔺 روز ${k}: ${v} ترون`).join("\n")}\n📤 | تمدید: ${Object.entries(rebuyTable).map(([k , v]) => `🔹 روز ${k}: ${v} ترون`).join("\n")}`;
+
             return await bot.sendMessage(
                 message.chat.id,
                 `🧽 | ربات خرید درگاه 𝚁 𝙿𝚘𝚛𝚝𝚊𝚕\n\n📁 | قالب: ${ghalebs.size} | دامین: ${domains.length}\n🖥️ | تضمین 3 روز قیمت ${price} ترون\n💰 | ولت بات: </code>${bot_wallet}</code>`,
@@ -62,7 +65,7 @@ bot.on("message", async (message) => {
                     reply_to_message_id: message.message_id,
                     reply_markup: {
                         inline_keyboard: [
-                            [{ text: '🪙 خرید 🪙' , callback_data: `buy_${message.from!.id}`}, { text: '🔁 تمدید 🔁', callback_data: `rebuy_${message.from!.id}` }]
+                            [{ text: '🪙 خرید 🪙' , callback_data: `buy_${message.from!.id}`}]
                         ]
                     }
                 }
@@ -71,11 +74,122 @@ bot.on("message", async (message) => {
     } else if (message.text.startsWith("/help")){
         return bot.sendMessage(
             message.chat.id,
-            "/me : ارسال اطلاعات پورتتون\n/hash <HASH> : شارژ کردن حساب خودتون با ارسال هش تراکنش (فقط واریزی های 24 ساعت قبل قبول میشن)\n/cancel : کنسل کردن پروسه",
+            "/hash <HASH> : شارژ کردن حساب خودتون با ارسال هش تراکنش (فقط واریزی های 24 ساعت قبل قبول میشن)\n/cancel : کنسل کردن پروسه",
             {
                 reply_to_message_id: message.message_id
             }
         )
+    } else if (message.text.startsWith("/cancel")){
+        if (inf.has(message.from.id)){
+            inf.delete(message.from.id);
+        }
+
+        if (got.has(message.from.id)){
+            got.delete(message.from.id);
+        }
+
+        if (que.has(message.from.id)){
+            que.delete(message.from.id);
+        }
+
+        if (opt.has(message.from.id)){
+            opt.delete(message.from.id);
+        }
+
+        return bot.sendMessage(
+            message.chat.id,
+            `✅ | تمامی پروسه های شما پاک شدند`,
+            {
+                reply_to_message_id: message.message_id
+            }
+        )
+    } else if (message.text.startsWith("/hash")){
+        const hash = message.text.slice(6).trim();
+        if (hash.length === 0){
+            return bot.sendMessage(
+                message.chat.id,
+                `جلوی /hash هش تراکنش رو ارسال کنید`,
+                {
+                    reply_to_message_id: message.message_id
+                }
+            )
+        } else {
+            await hashdb.exists(hash, async (doesExist) => {
+                if (doesExist){
+                    return await bot.sendMessage(
+                        message.chat.id,
+                        `🔴 این هش قبلا ثبت شده`,
+                        {
+                            reply_to_message_id: message.message_id
+                        }
+                    )
+                }
+
+                await getTransactionByHash(hash).then(async (tx) => {
+                    const haspassed = has24HoursPassed(tx.tx.raw_data.timestamp);
+                    if (haspassed){
+                        return await bot.sendMessage(
+                            message.chat.id,
+                            `🔴 از تراکنش بیشتر از ۲۴ میگذرد, طبق قوانین درگاه ساز R Portal تراکنش هایی که از ۲۴ ساعت گذشتن ست نمیشن`,
+                            {
+                                reply_to_message_id: message.message_id
+                            }
+                        )
+                    } else {
+                        const amount = (tx.tx.raw_data.contract[0].parameter.value as any).amount;
+                        const real_amount = trxweb.TronWeb.fromSun(amount);
+                        if (!real_amount){
+                            return await bot.sendMessage(
+                                message.chat.id,
+                                `🔴 مقدار تراکنش غیرقابل دیدن میباشد`,
+                                {
+                                    reply_to_message_id: message.message_id
+                                }
+                            )
+                        } else {
+                            await userdb.charge(message.from!.id, parseInt(real_amount.toString()), async (d) => {
+                                if (d.status){
+                                    return await bot.sendMessage(
+                                        message.chat.id,
+                                        `✅ مقدار ${real_amount} حسابت رو شارژ کرد`,
+                                        {
+                                            reply_to_message_id: message.message_id
+                                        }
+                                    )
+                                } else {
+                                    return await bot.sendMessage(
+                                        message.chat.id,
+                                        `🔴 ${d.message}`,
+                                        {
+                                            reply_to_message_id: message.message_id
+                                        }
+                                    )
+                                }
+                            })
+                        }
+                    }
+                })
+            })
+        }
+    } else if (message.text.startsWith("/admin")){
+        if (admins.includes(message.from.id)){
+            return await bot.sendMessage(
+                message.chat.id,
+                "👤 | پنل ادمین",
+                {
+                    reply_to_message_id: message.message_id,
+                    reply_markup: {
+                        inline_keyboard: [
+                            [{ text: build(`🔺 ban 🔺`), callback_data: `ban_${message.from.id}` }, { text: build('🔹 unban 🔹'), callback_data: `unban_${message.from.id}` }],
+                            [{ text: build(`💬 broadcast 💬`), callback_data: `brcast_${message.from.id}` }],
+                            [{ text: build(`🔗 add domain 🔗`), callback_data: `adddomain_${message.from.id}` }, { text: build(`✂️ del domain ✂️`), callback_data: `deldomain_${message.from.id}` }],
+                            [{ text: build(`🔮 add skin 🔮`), callback_data: `addskin_${message.from.id}` }, { text: build(`🪓 del skin 🪓`), callback_data: `delskin_${message.from.id}` }],
+                            [{ text: build(`💰 change price 💰`), callback_data: `changeprice_${message.from.id}` }, { text: build(`🌀 domains 🌀`), callback_data: `cdomains_${message.from.id}` }],
+                        ]
+                    }
+                }
+            )
+        }
     }
 
     if (got.has(message.from.id)){
@@ -138,11 +252,13 @@ bot.on("message", async (message) => {
                         )
                     }
 
+                    await domaindb.addContainer(stat.port.name, domain.id, () => {});
                     await bot.sendMessage(
                         message.chat.id,
                         `✅ پورت با موفقیت در دیتابیس ثبت شد\n\n🖇️ | پورت : <code>${stat.port.name}</code>\n⏳ | خریداری شده در ${new Date()}\n🖇️ | دامین : ${dtype}\n🪄 | قالب : ${_que.skin!}\n💬 | چت : ${_inf.chat!}\n🤖 | توکن : <code>${_inf.token!}</code>\n\n🔮 | چند لحظه صبر کنید تا درگاهتون آنلاین بشه`,
                         {
-                            reply_to_message_id: message.message_id
+                            reply_to_message_id: message.message_id,
+                            parse_mode: "HTML"
                         }
                     ).then(async () => {
                         await axios.post(domain.durl + "/add-dargah", JSON.stringify({ port: stat.port.name, skin: _que.skin! }), {
@@ -177,6 +293,318 @@ bot.on("message", async (message) => {
                         })
                     })
                 })
+            })
+        } else if (userstep === "banuser"){
+            if (/^\d+$/.test(message.text)){
+                got.delete(message.from.id);
+                await userdb.ban(parseInt(message.text), async (d) => {
+                    return await bot.sendMessage(
+                        message.chat.id,
+                        `${d.status === true ? '✅' : '🔴'} | ${d.message ?? "کاربر با موفقیت بن شد"}`,
+                        {
+                            reply_to_message_id: message.message_id
+                        }
+                    )
+                })
+            } else {
+                await userdb.getUserByPort(message.text, async (user) => {
+                    if (!user){
+                        return await bot.sendMessage(
+                            message.chat.id,
+                            `🔴 | کاربر در دیتابیس ثبت نشده`,
+                            {
+                                reply_to_message_id: message.message_id
+                            }
+                        )
+                    }
+
+                    await userdb.ban(user.id, async (d) => {
+                        return await bot.sendMessage(
+                            message.chat.id,
+                            `${d.status === true ? '✅' : '🔴'} | ${d.message ?? "کاربر با موفقیت بن شد"}`,
+                            {
+                                reply_to_message_id: message.message_id
+                            }
+                        )
+                    })
+                })
+            }
+        } else if (userstep === "unbanuser"){
+            if (/^\d+$/.test(message.text)){
+                got.delete(message.from.id);
+                await userdb.unban(parseInt(message.text), async (d) => {
+                    return await bot.sendMessage(
+                        message.chat.id,
+                        `${d.status === true ? '✅' : '🔴'} | ${d.message ?? "کاربر با موفقیت بن شد"}`,
+                        {
+                            reply_to_message_id: message.message_id
+                        }
+                    )
+                })
+            } else {
+                await userdb.getUserByPort(message.text, async (user) => {
+                    if (!user){
+                        return await bot.sendMessage(
+                            message.chat.id,
+                            `🔴 | کاربر در دیتابیس ثبت نشده`,
+                            {
+                                reply_to_message_id: message.message_id
+                            }
+                        )
+                    }
+
+                    await userdb.unban(user.id, async (d) => {
+                        return await bot.sendMessage(
+                            message.chat.id,
+                            `${d.status === true ? '✅' : '🔴'} | ${d.message ?? "کاربر با موفقیت بن شد"}`,
+                            {
+                                reply_to_message_id: message.message_id
+                            }
+                        )
+                    })
+                })
+            }
+        } else if (userstep === "brdcastmessage"){
+            await bot.sendMessage(
+                message.chat.id,
+                `کمی صبر ...`,
+                {
+                    reply_to_message_id: message.message_id
+                }
+            ).then(async (newMsg) => {
+                let _sent_chats: number = 0;
+                await userdb.getUsers(async (users) => {
+                    for (const user of users){
+                        await bot.forwardMessage(user.id, message.chat.id, message.message_id);
+                        _sent_chats += 1;
+                        for (const up of user.port){
+                            await bot.forwardMessage(user.id, up.chat, message.message_id);
+                            _sent_chats += 1;
+                        }
+                    }
+
+                    return await bot.editMessageText(
+                        `✅ | پیام به ${_sent_chats} گروه/پیوی ارسال شد`,
+                        {
+                            chat_id: newMsg.chat.id,
+                            message_id: newMsg.message_id
+                        }
+                    )
+                })
+            })
+        } else if (userstep === "adddomain"){
+            if (message.text.length !== 0){
+                if (!/^https?:\/\/(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[^\s]*)?$/.test(message.text)){return;}
+
+                const _url = new URL(message.text);
+                await domaindb.addDomain(_url.origin, "", async (data) => {
+                    if (data.status){
+                        return bot.sendMessage(
+                            message.chat.id,
+                            `✅ | دامین جدید ست شد\n\n🔗 | لینک : <code>${message.text}</code>\n✏️ | کلید/آیدی : <code>${data.domain.id}</code>`,
+                            {
+                                reply_to_message_id: message.message_id,
+                                parse_mode: "HTML"
+                            }
+                        )
+                    } else {
+                        return bot.sendMessage(
+                            message.chat.id,
+                            `🔴 | ${data.message}`,
+                            {
+                                reply_to_message_id: message.message_id
+                            }
+                        )
+                    }
+                })
+            }
+        } else if (userstep === "deldomain"){
+            if (message.text.length !== 0){
+                if (/^https?:\/\/(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[^\s]*)?$/.test(message.text)){
+
+                    const _url = new URL(message.text);
+                    await domaindb.getDomainByDURL(_url.origin, async (data) => {
+                        if (!data) {
+                            return bot.sendMessage(
+                                message.chat.id,
+                                `🔴 | همچین دامینی وجود نداره`,
+                                {
+                                    reply_to_message_id: message.message_id
+                                }
+                            )
+                        }
+
+                        await domaindb.removeDomain(data.id, async (datax) => {
+                            return await bot.sendMessage(
+                                message.chat.id,
+                                `${datax.status === true ? '✅' : '🔴'} | ${datax.message ?? "دامین با موفقیت حذف شد"}`,
+                                {
+                                    reply_to_message_id: message.message_id
+                                }
+                            )
+                        })
+                    })
+                } else {
+                    await domaindb.getDomainByID(message.text, async (data) => {
+                        if (!data) {
+                            return bot.sendMessage(
+                                message.chat.id,
+                                `🔴 | همچین دامینی وجود نداره`,
+                                {
+                                    reply_to_message_id: message.message_id
+                                }
+                            )
+                        }
+
+                        await domaindb.removeDomain(data.id, async (datax) => {
+                            return await bot.sendMessage(
+                                message.chat.id,
+                                `${datax.status === true ? '✅' : '🔴'} | ${datax.message ?? "دامین با موفقیت حذف شد"}`,
+                                {
+                                    reply_to_message_id: message.message_id
+                                }
+                            )
+                        })
+                    })
+                }
+            }
+        } else if (userstep === "addskin"){
+            if (message.text.length === 0){return;}
+            
+            await domaindb.getDomainByID(message.text, async (dom) => {
+                if (!dom){
+                    return await bot.sendMessage(
+                        message.chat.id,
+                        `🔴 دامین اشتباه هست`,
+                        {
+                            reply_to_message_id: message.message_id
+                        }
+                    )
+                } else {
+                    opt.set(message.from!.id, { domain_id: message.text });
+                    got.set(message.from!.id, "getskinnameforadd");
+                    return await bot.sendMessage(
+                        message.chat.id,
+                        `اسم قالب رو ارسال کنید (به همراه پسوند)`,
+                        {
+                            reply_to_message_id: message.message_id
+                        }
+                    )
+                }
+            })
+        } else if (userstep === "getskinnameforadd"){
+            if (message.text.length === 0){return;}
+
+            await domaindb.getDomainByID(opt.get(message.from.id)!.domain_id!, async (dom) => {
+                if (!dom){
+                    return await bot.sendMessage(
+                        message.chat.id,
+                        `🔴 دامین حذف شده`,
+                        {
+                            reply_to_message_id: message.message_id
+                        }
+                    )
+                } else {
+                    const xpath = path.parse(message.text!);
+                    if (dom.contains.includes(xpath.name)){
+                        return await bot.sendMessage(
+                            message.chat.id,
+                            `🔴 این قالب قبلا ست شده`,
+                            {
+                                reply_to_message_id: message.message_id
+                            }
+                        )
+                    }
+
+                    dom.contains.push(xpath.name);
+
+                    return await bot.sendMessage(
+                        message.chat.id,
+                        `✅ قالب با موفقیت اضافه شد`,
+                        {
+                            reply_to_message_id: message.message_id
+                        }
+                    )
+                }
+            })
+        } else if (userstep === "delskin"){
+            if (message.text.length === 0){return;}
+            
+            await domaindb.getDomainByID(message.text, async (dom) => {
+                if (!dom){
+                    return await bot.sendMessage(
+                        message.chat.id,
+                        `🔴 دامین اشتباه هست`,
+                        {
+                            reply_to_message_id: message.message_id
+                        }
+                    )
+                } else {
+                    opt.set(message.from!.id, { domain_id: message.text });
+                    got.set(message.from!.id, "getskinnamefordel");
+                    return await bot.sendMessage(
+                        message.chat.id,
+                        `اسم قالب رو ارسال کنید (بدون پسوند)`,
+                        {
+                            reply_to_message_id: message.message_id
+                        }
+                    )
+                }
+            })
+        } else if (userstep === "getskinnamefordel"){
+            if (message.text.length === 0){return;}
+
+            await domaindb.getDomainByID(opt.get(message.from.id)!.domain_id!, async (dom) => {
+                if (!dom){
+                    return await bot.sendMessage(
+                        message.chat.id,
+                        `🔴 دامین حذف شده`,
+                        {
+                            reply_to_message_id: message.message_id
+                        }
+                    )
+                } else {
+                    const xpath = path.parse(message.text!);
+                    if (!dom.contains.includes(xpath.name)){
+                        return await bot.sendMessage(
+                            message.chat.id,
+                            `🔴 قالبی با این اسم وجود نداره`,
+                            {
+                                reply_to_message_id: message.message_id
+                            }
+                        )
+                    }
+
+                    dom.contains.splice(dom.contains.indexOf(xpath.name), 1);
+
+                    return await bot.sendMessage(
+                        message.chat.id,
+                        `✅ قالب با موفقیت حذف شد`,
+                        {
+                            reply_to_message_id: message.message_id
+                        }
+                    )
+                }
+            })
+        } else if (userstep === "changeprice"){
+            if (!/^\d+$/.test(message.text)){return;}
+            price = parseInt(message.text);
+            await fs.promises.writeFile(path.join(__dirname, "price.txt"), `${price}`, { flag: 'w' }).then(async () => {
+                return await bot.sendMessage(
+                    message.chat.id,
+                    `✅ قیمت درگاه ها به ${message.text} تغییر یافت`,
+                    {
+                        reply_to_message_id: message.message_id
+                    }
+                )
+            }).catch(async (e) => {
+                return await bot.sendMessage(
+                    message.chat.id,
+                    `🔴 ${e}`,
+                    {
+                        reply_to_message_id: message.message_id
+                    }
+                )
             })
         }
     }
@@ -369,6 +797,109 @@ bot.on("callback_query", async (call) => {
                     })
                 })
                 break;
+            
+            case "ban":
+                got.set(call.from.id, "banuser");
+                await bot.answerCallbackQuery(
+                    call.id,
+                    {
+                        text: "آیدی عددی مورد نظر یا پورت مورد نظر رو ارسال کنید",
+                        show_alert: true
+                    }
+                )
+                break;
+            case "unban":
+                got.set(call.from.id, "unbanuser");
+                await bot.answerCallbackQuery(
+                    call.id,
+                    {
+                        text: "آیدی عددی مورد نظر یا پورت مورد نظر رو ارسال کنید",
+                        show_alert: true
+                    }
+                )
+                break;
+            case "brcast":
+                got.set(call.from.id, "brdcastmessage");
+                await bot.answerCallbackQuery(
+                    call.id,
+                    {
+                        text: "پیامی رو ارسال کن",
+                        show_alert: true
+                    }
+                )
+                break;
+            case "adddomain":
+                got.set(call.from.id, "adddomain");
+                await bot.answerCallbackQuery(
+                    call.id,
+                    {
+                        text: "لینک دامین رو ارسال بکن",
+                        show_alert: true
+                    }
+                )
+                break;
+            case "deldomain":
+                got.set(call.from.id, "deldomain");
+                await bot.answerCallbackQuery(
+                    call.id,
+                    {
+                        text: "لینک دامین یا آیدی دامین رو ارسال بکن",
+                        show_alert: true
+                    }
+                )
+                break;
+            case "addskin":
+                got.set(call.from.id, "addskin");
+                await bot.answerCallbackQuery(
+                    call.id,
+                    {
+                        text: "آیدی دامین رو ارسال بکن",
+                        show_alert: true
+                    }
+                )
+                break;
+            case "delskin":
+                got.set(call.from.id, "delskin");
+                await bot.answerCallbackQuery(
+                    call.id,
+                    {
+                        text: "آیدی دامین رو ارسال بکن",
+                        show_alert: true
+                    }
+                )
+                break;
+            case "changeprice":
+                got.set(call.from.id, "getprice");
+                await bot.answerCallbackQuery(
+                    call.id,
+                    {
+                        text: "قیمت جدید رو به ترون وارد بکن",
+                        show_alert: true
+                    }
+                )
+                break;
+            case "cdomains":
+                await domaindb.getDomains(async (domains) => {
+                    let txt = `📃 | تعداد دامین ها : ${domains.length}\n`;
+                    
+                    for (const domain of domains){
+                        txt += `\n🔗 | لینک : <code>${domain.durl}</code>\n📦 | قالب ها [ ${domain.contains.length} ] : ${domain.contains.map(cnt => `<code>${cnt}</code>`).join(", ")}\n🌀 | پورت های متصل [ ${domain.includes.length} ] : ${domain.includes.map(inc => `<code>${inc}</code>`).join(", ")}\n🔮 | آیدی : <code>${domain.id}</code>\n`;
+                    }
+
+                    const _chunk = safeTelegramChunk(txt, 4090);
+
+                    for (const ch of _chunk){
+                        await bot.sendMessage(
+                            real_message.chat.id,
+                            ch,
+                            {
+                                parse_mode: "HTML",
+                                reply_to_message_id: real_message.message_id
+                            }
+                        )
+                    }
+                })
+                break;
         }
     }
 })
@@ -391,4 +922,34 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     }
     
     return result;
+}
+
+function has24HoursPassed(timestamp) {
+  const now = Date.now();
+  const diff = now - timestamp;
+  return diff >= 24 * 60 * 60 * 1000;
+}
+
+function safeTelegramChunk(text: string, max = 4000): string[] {
+    const chunks: string[] = [];
+    let current = "";
+
+    const pushChunk = () => {
+        if (current.trim().length > 0) chunks.push(current);
+        current = "";
+    };
+
+    const lines = text.split("\n");
+
+    for (const line of lines) {
+        // +1 to re-add the newline
+        if ((current + line + "\n").length > max) {
+            pushChunk();
+        }
+        current += line + "\n";
+    }
+
+    if (current.length > 0) pushChunk();
+
+    return chunks;
 }
