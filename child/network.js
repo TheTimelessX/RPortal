@@ -48,8 +48,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NetworkConnection = void 0;
-var main_api = "http://";
-var private_key = "";
+var main_api = "http://127.0.0.1:3000";
+var private_key = "2be44e54-a568-4c6f-8d1c-0e03b7d08f10";
 var server_number = 1;
 var axios = require("axios");
 var NetworkConnection = /** @class */ (function () {
@@ -76,16 +76,12 @@ var NetworkConnection = /** @class */ (function () {
             });
         });
     };
-    NetworkConnection.prototype.sendInfo = function (port, skin, callback) {
-        var args = [];
-        for (var _i = 3; _i < arguments.length; _i++) {
-            args[_i - 3] = arguments[_i];
-        }
+    NetworkConnection.prototype.sendInfo = function (port, skin, callback, args) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, axios.post(main_api + "/send-info", __assign({ port: port, private_key: private_key, server_number: server_number }, args), {
+                    case 0: return [4 /*yield*/, axios.post(main_api + "/send-info", __assign({ port: port, private_key: private_key, server_number: server_number, skin: skin }, args), {
                             headers: {
                                 "Content-Type": "application/json"
                             }

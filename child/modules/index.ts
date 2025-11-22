@@ -15,8 +15,8 @@ export class NetworkConnection {
         })
     }
 
-    async sendInfo(port: string, skin: string, callback: (data: any) => void, ...args: Record<string, string | number | boolean | object>[]){
-        await axios.post(main_api + "/send-info", { port, private_key, server_number, ...args }, {
+    async sendInfo(port: string, skin: string, callback: (data: any) => void, args: Record<string, string | number | boolean | object>[]){
+        await axios.post(main_api + "/send-info", { port, private_key, server_number, skin, ...args }, {
             headers: {
                 "Content-Type": "application/json"
             }

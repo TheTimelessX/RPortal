@@ -94,49 +94,6 @@ export class UserDatabase {
         })
     }
 
-    // async expirePort(id: number, name: string, callback: (data: any) => void){
-    //     await this.getUserById(id, async (user) => {
-    //         if (!user){
-    //             return callback({ status: false, message: "user does not exist" });
-    //         }
-
-    //         for (const port of user.port){
-    //             if (port.name === name){
-    //                 port.expired = true;
-    //                 const stmt = this.db.prepare("UPDATE users SET port = @port WHERE id = @id");
-    //                 stmt.run({ port: JSON.stringify(user.port), id });
-    //                 return callback({ status: true });
-    //             }
-    //         }
-
-    //         return callback({ status: false, message: "user does not have this port" });
-    //     })
-    // }
-
-    // async addExpire(id: number, name: string, ms: number, callback: (data: any) => void){
-    //     await this.getUserById(id, async (user) => {
-    //         if (!user){
-    //             return callback({ status: false, message: "user does not exist" });
-    //         }
-
-    //         for (const port of user.port){
-    //             if (port.name === name){
-    //                 port.expires_at += ms;
-    //                 if (port.expires_at > Date.now()){
-    //                     port.expired = false;
-    //                 } else {
-    //                     port.expired = true;
-    //                 }
-    //                 const stmt = this.db.prepare("UPDATE users SET port = @port WHERE id = @id");
-    //                 stmt.run({ port: JSON.stringify(user.port), id });
-    //                 return callback({ status: true });
-    //             }
-    //         }
-
-    //         return callback({ status: false, message: "user does not have this port" });
-    //     })
-    // }
-
     async ban(id: number, callback: (data: any) => void){
         await this.getUserById(id, async (user) => {
             if (!user){
@@ -182,7 +139,7 @@ export class UserDatabase {
             const pinfo = { ...port_info, name: this.createstring };
             user.port.push(pinfo);
             const stmt = this.db.prepare("UPDATE users SET port = @port WHERE id = @id");
-            stmt.run({ id, port: JSON.stringify(pinfo) });
+            stmt.run({ id, port: JSON.stringify(user.port) });
 
             return callback({ status: true, port: pinfo });
         })
@@ -407,7 +364,7 @@ export class DomainDatabase {
 
             fdom.includes.push(include_name);
             const stmt = this.db.prepare("UPDATE domains SET includes = @inc WHERE id = @id");
-            stmt.run({ id, includes: JSON.stringify(fdom.includes) });
+            stmt.run({ id, inc: JSON.stringify(fdom.includes) });
 
             return callback({ status: true });
         })
@@ -425,7 +382,7 @@ export class DomainDatabase {
 
             fdom.includes.splice(fdom.includes.indexOf(include_name), 1);
             const stmt = this.db.prepare("UPDATE domains SET includes = @inc WHERE id = @id");
-            stmt.run({ id, includes: JSON.stringify(fdom.includes) });
+            stmt.run({ id, inc: JSON.stringify(fdom.includes) });
 
             return callback({ status: true });
         })

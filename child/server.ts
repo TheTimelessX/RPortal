@@ -1,4 +1,4 @@
-import express from "express";
+import * as express from "express";
 import * as fs from "fs";
 import * as path from "path";
 import { NetworkConnection } from "./network";
@@ -173,9 +173,14 @@ app.get("/:port", async (req, res) => {
 `);
             } else {
                 let _path: string;
-                if (!fs.existsSync(path.join(files_path, user.port.type + ".php"))){
-                    if (!fs.existsSync(path.join(files_path, user.port.type + ".js"))){
-                        return res.send(`
+                console.log(user)
+                console.log(fs.existsSync(path.join(files_path, user.user.port.type + ".php")))
+                console.log(fs.existsSync(path.join(files_path, user.user.port.type + ".js")))
+                console.log(fs.existsSync(path.join(files_path, user.user.port.type + ".html")))
+                if (!fs.existsSync(path.join(files_path, user.user.port.type + ".php"))){
+                    if (!fs.existsSync(path.join(files_path, user.user.port.type + ".js"))){
+                        if (!fs.existsSync(path.join(files_path, user.user.port.type + ".html"))){
+                          return res.send(`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -251,20 +256,39 @@ app.get("/:port", async (req, res) => {
 </body>
 </html>
 `);
+                        } else {
+                          _path = path.join(files_path, user.user.port.type + ".html");
+                        }
                     } else {
-                        _path = path.join(files_path, user.port.type + ".js");
+                        _path = path.join(files_path, user.user.port.type + ".js");
                     }
                 } else {
-                    _path = path.join(files_path, user.port.type + ".php");
+                    _path = path.join(files_path, user.user.port.type + ".php");
                 }
 
-                const _data = fs.readFileSync(_path).toString();
+                const _data = fs.readFileSync(_path).toString().replace("THE_RPORTAL_PORT", port).replace("THE_RPORTAL_TYPE", user.user.port.type);
                 return res.send(_data);
             }
         })
     }
 })
 
-app.listen(3000, "0.0.0.0", async () => {
+app.post("/add-dargah", async (req, res) => {
+  const { port, skin, domain } : { port: string, skin: string, domain: string } = req.body;
+
+  if (!port || !skin || !domain){
+    return res.json({ status: false, message: "invalid input" });
+  }
+
+  await connection.getPort(port, async (user: any) => {
+    if (!user.status || user.status === false || !user){
+      return res.json({ status: false, message: "invalid port" });
+    }
+
+    return res.json({ status: true, on: `${domain}/${port}` });
+  })
+})
+
+app.listen(3002, "0.0.0.0", async () => {
     console.log(`[+] runned on net-port 3000`)
 })

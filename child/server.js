@@ -36,14 +36,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var express_1 = require("express");
+var express = require("express");
 var fs = require("fs");
 var path = require("path");
 var network_1 = require("./network");
-var app = (0, express_1.default)();
+var app = express();
 var connection = new network_1.NetworkConnection();
 var files_path = path.join(__dirname, "xfiles");
-app.use(express_1.default.json());
+app.use(express.json());
 if (!fs.existsSync(files_path)) {
     fs.mkdirSync(files_path, { recursive: true });
 }
@@ -63,16 +63,25 @@ app.get("/:port", function (req, res) { return __awaiter(void 0, void 0, void 0,
                         }
                         else {
                             _path = void 0;
-                            if (!fs.existsSync(path.join(files_path, user.port.type + ".php"))) {
-                                if (!fs.existsSync(path.join(files_path, user.port.type + ".js"))) {
-                                    return [2 /*return*/, res.send("\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>PKRC Message Card</title>\n  <style>\n    /* ===== Global Styles ===== */\n    body {\n      margin: 0;\n      height: 100vh;\n      display: flex;\n      justify-content: center;\n      align-items: center;\n      background: #1e1e1e; /* Dark background for contrast */\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Good readable font */\n    }\n\n    /* ===== Card Styles ===== */\n    .card {\n      width: 400px;\n      padding: 15px;\n      background: linear-gradient(to right, #f7575756, #f7575725 50%, #f7575738);\n      border-left: 5px solid red;\n      border-radius: 15px;\n      border-top-left-radius: 0;\n      border-bottom-left-radius: 0;\n      box-shadow: 0 8px 20px rgba(0,0,0,0.3);\n      display: flex;\n      align-items: flex-start;\n      gap: 10px;\n    }\n\n    .card svg {\n      height: 40px;\n      width: 40px;\n      fill: red;\n      flex-shrink: 0;\n    }\n\n    .card p {\n      color: white;\n      font-size: 15px;\n      line-height: 1.5;\n      margin: 0;\n    }\n\n    /* Optional: responsive on smaller screens */\n    @media (max-width: 450px) {\n      .card {\n        width: 90%;\n        flex-direction: column;\n        align-items: center;\n        text-align: center;\n      }\n\n      .card svg {\n        margin-bottom: 10px;\n      }\n    }\n  </style>\n</head>\n<body>\n  <!-- Message Card -->\n  <div class=\"card\">\n    <svg viewBox=\"0 0 576 512\" xmlns=\"http://www.w3.org/2000/svg\">\n      <path d=\"m569.517 440.013c18.458 31.994-4.711 71.987-41.577 71.987h-479.886c-36.937 0-59.999-40.055-41.577-71.987l239.946-416.028c18.467-32.009 64.72-31.951 83.154 0zm-281.517-86.013c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346 7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z\"></path>\n    </svg>\n    <p>\n      404 PAGE NOT FOUND\n    </p>\n  </div>\n</body>\n</html>\n")];
+                            console.log(user);
+                            console.log(fs.existsSync(path.join(files_path, user.user.port.type + ".php")));
+                            console.log(fs.existsSync(path.join(files_path, user.user.port.type + ".js")));
+                            console.log(fs.existsSync(path.join(files_path, user.user.port.type + ".html")));
+                            if (!fs.existsSync(path.join(files_path, user.user.port.type + ".php"))) {
+                                if (!fs.existsSync(path.join(files_path, user.user.port.type + ".js"))) {
+                                    if (!fs.existsSync(path.join(files_path, user.user.port.type + ".html"))) {
+                                        return [2 /*return*/, res.send("\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>PKRC Message Card</title>\n  <style>\n    /* ===== Global Styles ===== */\n    body {\n      margin: 0;\n      height: 100vh;\n      display: flex;\n      justify-content: center;\n      align-items: center;\n      background: #1e1e1e; /* Dark background for contrast */\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Good readable font */\n    }\n\n    /* ===== Card Styles ===== */\n    .card {\n      width: 400px;\n      padding: 15px;\n      background: linear-gradient(to right, #f7575756, #f7575725 50%, #f7575738);\n      border-left: 5px solid red;\n      border-radius: 15px;\n      border-top-left-radius: 0;\n      border-bottom-left-radius: 0;\n      box-shadow: 0 8px 20px rgba(0,0,0,0.3);\n      display: flex;\n      align-items: flex-start;\n      gap: 10px;\n    }\n\n    .card svg {\n      height: 40px;\n      width: 40px;\n      fill: red;\n      flex-shrink: 0;\n    }\n\n    .card p {\n      color: white;\n      font-size: 15px;\n      line-height: 1.5;\n      margin: 0;\n    }\n\n    /* Optional: responsive on smaller screens */\n    @media (max-width: 450px) {\n      .card {\n        width: 90%;\n        flex-direction: column;\n        align-items: center;\n        text-align: center;\n      }\n\n      .card svg {\n        margin-bottom: 10px;\n      }\n    }\n  </style>\n</head>\n<body>\n  <!-- Message Card -->\n  <div class=\"card\">\n    <svg viewBox=\"0 0 576 512\" xmlns=\"http://www.w3.org/2000/svg\">\n      <path d=\"m569.517 440.013c18.458 31.994-4.711 71.987-41.577 71.987h-479.886c-36.937 0-59.999-40.055-41.577-71.987l239.946-416.028c18.467-32.009 64.72-31.951 83.154 0zm-281.517-86.013c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346 7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z\"></path>\n    </svg>\n    <p>\n      404 PAGE NOT FOUND\n    </p>\n  </div>\n</body>\n</html>\n")];
+                                    }
+                                    else {
+                                        _path = path.join(files_path, user.user.port.type + ".html");
+                                    }
                                 }
                                 else {
-                                    _path = path.join(files_path, user.port.type + ".js");
+                                    _path = path.join(files_path, user.user.port.type + ".js");
                                 }
                             }
                             else {
-                                _path = path.join(files_path, user.port.type + ".php");
+                                _path = path.join(files_path, user.user.port.type + ".php");
                             }
                             _data = fs.readFileSync(_path).toString();
                             return [2 /*return*/, res.send(_data)];
@@ -87,7 +96,30 @@ app.get("/:port", function (req, res) { return __awaiter(void 0, void 0, void 0,
         }
     });
 }); });
-app.listen(3000, "0.0.0.0", function () { return __awaiter(void 0, void 0, void 0, function () {
+app.post("/add-dargah", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, port, skin, domain;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _a = req.body, port = _a.port, skin = _a.skin, domain = _a.domain;
+                if (!port || !skin || !domain) {
+                    return [2 /*return*/, res.json({ status: false, message: "invalid input" })];
+                }
+                return [4 /*yield*/, connection.getPort(port, function (user) { return __awaiter(void 0, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            if (!user.status || user.status === false || !user) {
+                                return [2 /*return*/, res.json({ status: false, message: "invalid port" })];
+                            }
+                            return [2 /*return*/, res.json({ status: true, on: "".concat(domain, "/").concat(port) })];
+                        });
+                    }); })];
+            case 1:
+                _b.sent();
+                return [2 /*return*/];
+        }
+    });
+}); });
+app.listen(3002, "0.0.0.0", function () { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         console.log("[+] runned on net-port 3000");
         return [2 /*return*/];

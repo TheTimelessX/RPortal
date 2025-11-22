@@ -73,6 +73,7 @@ var que = new Map();
 var got = new Map();
 var inf = new Map();
 var opt = new Map();
+var cns = new Map();
 var translationTable = {
     'q': 'ǫ', 'w': 'ᴡ', 'e': 'ᴇ', 'r': 'ʀ', 't': 'ᴛ',
     'y': 'ʏ', 'u': 'ᴜ', 'i': 'ɪ', 'o': 'ᴏ', 'p': 'ᴘ',
@@ -82,7 +83,7 @@ var translationTable = {
     'm': 'ᴍ'
 };
 bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, function () {
-    var hash_1, userstep, _inf_1, _que_1, _url, pk_1, _url;
+    var userstep, _inf_1, _que_1, _url, pk_1, _url, coins;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -93,7 +94,7 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                     return [2 /*return*/];
                 message.text = message.text ? message.text : "";
                 if (!(message.text.startsWith("/start") || message.text === "درگاه")) return [3 /*break*/, 3];
-                return [4 /*yield*/, userdb.add(message.from.id, function () { })];
+                return [4 /*yield*/, userdb.add(message.from.id, function (t) { console.log(t); })];
             case 1:
                 _a.sent();
                 return [4 /*yield*/, domaindb.getDomains(function (domains) { return __awaiter(void 0, void 0, void 0, function () {
@@ -124,100 +125,154 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                     }); })];
             case 2:
                 _a.sent();
-                return [3 /*break*/, 11];
+                return [3 /*break*/, 12];
             case 3:
                 if (!message.text.startsWith("/help")) return [3 /*break*/, 4];
-                return [2 /*return*/, bot.sendMessage(message.chat.id, "/hash <HASH> : شارژ کردن حساب خودتون با ارسال هش تراکنش (فقط واریزی های 24 ساعت قبل قبول میشن)\n/cancel : کنسل کردن پروسه", {
+                return [2 /*return*/, bot.sendMessage(message.chat.id, "/hash <HASH> : شارژ کردن حساب خودتون با ارسال هش تراکنش (فقط واریزی های 24 ساعت قبل قبول میشن)\n/wallet : مقداری که حسابتون شارژ شده\n/cancel : کنسل کردن پروسه", {
                         reply_to_message_id: message.message_id
                     })];
             case 4:
-                if (!message.text.startsWith("/cancel")) return [3 /*break*/, 5];
-                if (inf.has(message.from.id)) {
-                    inf.delete(message.from.id);
-                }
-                if (got.has(message.from.id)) {
-                    got.delete(message.from.id);
-                }
-                if (que.has(message.from.id)) {
-                    que.delete(message.from.id);
-                }
-                if (opt.has(message.from.id)) {
-                    opt.delete(message.from.id);
-                }
-                return [2 /*return*/, bot.sendMessage(message.chat.id, "\u2705 | \u062A\u0645\u0627\u0645\u06CC \u067E\u0631\u0648\u0633\u0647 \u0647\u0627\u06CC \u0634\u0645\u0627 \u067E\u0627\u06A9 \u0634\u062F\u0646\u062F", {
-                        reply_to_message_id: message.message_id
-                    })];
-            case 5:
-                if (!message.text.startsWith("/hash")) return [3 /*break*/, 9];
-                hash_1 = message.text.slice(6).trim();
-                if (!(hash_1.length === 0)) return [3 /*break*/, 6];
-                return [2 /*return*/, bot.sendMessage(message.chat.id, "\u062C\u0644\u0648\u06CC /hash \u0647\u0634 \u062A\u0631\u0627\u06A9\u0646\u0634 \u0631\u0648 \u0627\u0631\u0633\u0627\u0644 \u06A9\u0646\u06CC\u062F", {
-                        reply_to_message_id: message.message_id
-                    })];
-            case 6: return [4 /*yield*/, hashdb.exists(hash_1, function (doesExist) { return __awaiter(void 0, void 0, void 0, function () {
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0:
-                                if (!doesExist) return [3 /*break*/, 2];
-                                return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 \u0627\u06CC\u0646 \u0647\u0634 \u0642\u0628\u0644\u0627 \u062B\u0628\u062A \u0634\u062F\u0647", {
+                if (!message.text.startsWith("/wallet")) return [3 /*break*/, 6];
+                return [4 /*yield*/, userdb.getUserById(message.from.id, function (user) { return __awaiter(void 0, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    if (!!user) return [3 /*break*/, 2];
+                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "اول /start رو بفرست", {
+                                            reply_to_message_id: message.message_id
+                                        })];
+                                case 1: return [2 /*return*/, _a.sent()];
+                                case 2: return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83C\uDF00 wallet : ".concat(user.coins), {
                                         reply_to_message_id: message.message_id
                                     })];
-                            case 1: return [2 /*return*/, _a.sent()];
-                            case 2: return [4 /*yield*/, (0, tron_1.getTransactionByHash)(hash_1).then(function (tx) { return __awaiter(void 0, void 0, void 0, function () {
-                                    var haspassed, amount, real_amount_1;
-                                    return __generator(this, function (_a) {
-                                        switch (_a.label) {
-                                            case 0:
-                                                haspassed = has24HoursPassed(tx.tx.raw_data.timestamp);
-                                                if (!haspassed) return [3 /*break*/, 2];
-                                                return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 \u0627\u0632 \u062A\u0631\u0627\u06A9\u0646\u0634 \u0628\u06CC\u0634\u062A\u0631 \u0627\u0632 \u06F2\u06F4 \u0645\u06CC\u06AF\u0630\u0631\u062F, \u0637\u0628\u0642 \u0642\u0648\u0627\u0646\u06CC\u0646 \u062F\u0631\u06AF\u0627\u0647 \u0633\u0627\u0632 R Portal \u062A\u0631\u0627\u06A9\u0646\u0634 \u0647\u0627\u06CC\u06CC \u06A9\u0647 \u0627\u0632 \u06F2\u06F4 \u0633\u0627\u0639\u062A \u06AF\u0630\u0634\u062A\u0646 \u0633\u062A \u0646\u0645\u06CC\u0634\u0646", {
-                                                        reply_to_message_id: message.message_id
-                                                    })];
-                                            case 1: return [2 /*return*/, _a.sent()];
-                                            case 2:
-                                                amount = tx.tx.raw_data.contract[0].parameter.value.amount;
-                                                real_amount_1 = trxweb.TronWeb.fromSun(amount);
-                                                if (!!real_amount_1) return [3 /*break*/, 4];
-                                                return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 \u0645\u0642\u062F\u0627\u0631 \u062A\u0631\u0627\u06A9\u0646\u0634 \u063A\u06CC\u0631\u0642\u0627\u0628\u0644 \u062F\u06CC\u062F\u0646 \u0645\u06CC\u0628\u0627\u0634\u062F", {
-                                                        reply_to_message_id: message.message_id
-                                                    })];
-                                            case 3: return [2 /*return*/, _a.sent()];
-                                            case 4: return [4 /*yield*/, userdb.charge(message.from.id, parseInt(real_amount_1.toString()), function (d) { return __awaiter(void 0, void 0, void 0, function () {
-                                                    return __generator(this, function (_a) {
-                                                        switch (_a.label) {
-                                                            case 0:
-                                                                if (!d.status) return [3 /*break*/, 2];
-                                                                return [4 /*yield*/, bot.sendMessage(message.chat.id, "\u2705 \u0645\u0642\u062F\u0627\u0631 ".concat(real_amount_1, " \u062D\u0633\u0627\u0628\u062A \u0631\u0648 \u0634\u0627\u0631\u0698 \u06A9\u0631\u062F"), {
-                                                                        reply_to_message_id: message.message_id
-                                                                    })];
-                                                            case 1: return [2 /*return*/, _a.sent()];
-                                                            case 2: return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 ".concat(d.message), {
-                                                                    reply_to_message_id: message.message_id
-                                                                })];
-                                                            case 3: return [2 /*return*/, _a.sent()];
-                                                        }
-                                                    });
-                                                }); })];
-                                            case 5:
-                                                _a.sent();
-                                                _a.label = 6;
-                                            case 6: return [2 /*return*/];
-                                        }
-                                    });
-                                }); })];
-                            case 3:
-                                _a.sent();
-                                return [2 /*return*/];
-                        }
-                    });
-                }); })];
+                                case 3: return [2 /*return*/, _a.sent()];
+                            }
+                        });
+                    }); })];
+            case 5:
+                _a.sent();
+                return [3 /*break*/, 12];
+            case 6:
+                if (!message.text.startsWith("/cancel")) return [3 /*break*/, 8];
+                return [4 /*yield*/, userdb.getUserById(message.from.id, function (user) { return __awaiter(void 0, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    if (!!user) return [3 /*break*/, 2];
+                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "اول /start رو بفرست", {
+                                            reply_to_message_id: message.message_id
+                                        })];
+                                case 1: return [2 /*return*/, _a.sent()];
+                                case 2:
+                                    if (inf.has(message.from.id)) {
+                                        inf.delete(message.from.id);
+                                    }
+                                    if (got.has(message.from.id)) {
+                                        got.delete(message.from.id);
+                                    }
+                                    if (que.has(message.from.id)) {
+                                        que.delete(message.from.id);
+                                    }
+                                    if (opt.has(message.from.id)) {
+                                        opt.delete(message.from.id);
+                                    }
+                                    return [2 /*return*/, bot.sendMessage(message.chat.id, "\u2705 | \u062A\u0645\u0627\u0645\u06CC \u067E\u0631\u0648\u0633\u0647 \u0647\u0627\u06CC \u0634\u0645\u0627 \u067E\u0627\u06A9 \u0634\u062F\u0646\u062F", {
+                                            reply_to_message_id: message.message_id
+                                        })];
+                            }
+                        });
+                    }); })];
             case 7:
                 _a.sent();
-                _a.label = 8;
-            case 8: return [3 /*break*/, 11];
+                return [3 /*break*/, 12];
+            case 8:
+                if (!message.text.startsWith("/hash")) return [3 /*break*/, 10];
+                return [4 /*yield*/, userdb.getUserById(message.from.id, function (user) { return __awaiter(void 0, void 0, void 0, function () {
+                        var hash;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    if (!!user) return [3 /*break*/, 2];
+                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "اول /start رو بفرست", {
+                                            reply_to_message_id: message.message_id
+                                        })];
+                                case 1: return [2 /*return*/, _a.sent()];
+                                case 2:
+                                    hash = message.text.slice(6).trim();
+                                    if (!(hash.length === 0)) return [3 /*break*/, 3];
+                                    return [2 /*return*/, bot.sendMessage(message.chat.id, "\u062C\u0644\u0648\u06CC /hash \u0647\u0634 \u062A\u0631\u0627\u06A9\u0646\u0634 \u0631\u0648 \u0627\u0631\u0633\u0627\u0644 \u06A9\u0646\u06CC\u062F", {
+                                            reply_to_message_id: message.message_id
+                                        })];
+                                case 3: return [4 /*yield*/, hashdb.exists(hash, function (doesExist) { return __awaiter(void 0, void 0, void 0, function () {
+                                        return __generator(this, function (_a) {
+                                            switch (_a.label) {
+                                                case 0:
+                                                    if (!doesExist) return [3 /*break*/, 2];
+                                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 \u0627\u06CC\u0646 \u0647\u0634 \u0642\u0628\u0644\u0627 \u062B\u0628\u062A \u0634\u062F\u0647", {
+                                                            reply_to_message_id: message.message_id
+                                                        })];
+                                                case 1: return [2 /*return*/, _a.sent()];
+                                                case 2: return [4 /*yield*/, (0, tron_1.getTransactionByHash)(hash).then(function (tx) { return __awaiter(void 0, void 0, void 0, function () {
+                                                        var haspassed, amount, real_amount_1;
+                                                        return __generator(this, function (_a) {
+                                                            switch (_a.label) {
+                                                                case 0:
+                                                                    haspassed = has24HoursPassed(tx.tx.raw_data.timestamp);
+                                                                    if (!haspassed) return [3 /*break*/, 2];
+                                                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 \u0627\u0632 \u062A\u0631\u0627\u06A9\u0646\u0634 \u0628\u06CC\u0634\u062A\u0631 \u0627\u0632 \u06F2\u06F4 \u0645\u06CC\u06AF\u0630\u0631\u062F, \u0637\u0628\u0642 \u0642\u0648\u0627\u0646\u06CC\u0646 \u062F\u0631\u06AF\u0627\u0647 \u0633\u0627\u0632 R Portal \u062A\u0631\u0627\u06A9\u0646\u0634 \u0647\u0627\u06CC\u06CC \u06A9\u0647 \u0627\u0632 \u06F2\u06F4 \u0633\u0627\u0639\u062A \u06AF\u0630\u0634\u062A\u0646 \u0633\u062A \u0646\u0645\u06CC\u0634\u0646", {
+                                                                            reply_to_message_id: message.message_id
+                                                                        })];
+                                                                case 1: return [2 /*return*/, _a.sent()];
+                                                                case 2:
+                                                                    amount = tx.tx.raw_data.contract[0].parameter.value.amount;
+                                                                    real_amount_1 = trxweb.TronWeb.fromSun(amount);
+                                                                    if (!!real_amount_1) return [3 /*break*/, 4];
+                                                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 \u0645\u0642\u062F\u0627\u0631 \u062A\u0631\u0627\u06A9\u0646\u0634 \u063A\u06CC\u0631\u0642\u0627\u0628\u0644 \u062F\u06CC\u062F\u0646 \u0645\u06CC\u0628\u0627\u0634\u062F", {
+                                                                            reply_to_message_id: message.message_id
+                                                                        })];
+                                                                case 3: return [2 /*return*/, _a.sent()];
+                                                                case 4: return [4 /*yield*/, userdb.charge(message.from.id, parseInt(real_amount_1.toString()), function (d) { return __awaiter(void 0, void 0, void 0, function () {
+                                                                        return __generator(this, function (_a) {
+                                                                            switch (_a.label) {
+                                                                                case 0:
+                                                                                    if (!d.status) return [3 /*break*/, 2];
+                                                                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "\u2705 \u0645\u0642\u062F\u0627\u0631 ".concat(real_amount_1, " \u062D\u0633\u0627\u0628\u062A \u0631\u0648 \u0634\u0627\u0631\u0698 \u06A9\u0631\u062F"), {
+                                                                                            reply_to_message_id: message.message_id
+                                                                                        })];
+                                                                                case 1: return [2 /*return*/, _a.sent()];
+                                                                                case 2: return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 ".concat(d.message), {
+                                                                                        reply_to_message_id: message.message_id
+                                                                                    })];
+                                                                                case 3: return [2 /*return*/, _a.sent()];
+                                                                            }
+                                                                        });
+                                                                    }); })];
+                                                                case 5:
+                                                                    _a.sent();
+                                                                    _a.label = 6;
+                                                                case 6: return [2 /*return*/];
+                                                            }
+                                                        });
+                                                    }); })];
+                                                case 3:
+                                                    _a.sent();
+                                                    return [2 /*return*/];
+                                            }
+                                        });
+                                    }); })];
+                                case 4:
+                                    _a.sent();
+                                    _a.label = 5;
+                                case 5: return [2 /*return*/];
+                            }
+                        });
+                    }); })];
             case 9:
-                if (!message.text.startsWith("/admin")) return [3 /*break*/, 11];
-                if (!admins.includes(message.from.id)) return [3 /*break*/, 11];
+                _a.sent();
+                return [3 /*break*/, 12];
+            case 10:
+                if (!message.text.startsWith("/admin")) return [3 /*break*/, 12];
+                if (!admins.includes(message.from.id)) return [3 /*break*/, 12];
                 return [4 /*yield*/, bot.sendMessage(message.chat.id, "👤 | پنل ادمین", {
                         reply_to_message_id: message.message_id,
                         reply_markup: {
@@ -227,14 +282,15 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                                 [{ text: build("\uD83D\uDD17 add domain \uD83D\uDD17"), callback_data: "adddomain_".concat(message.from.id) }, { text: build("\u2702\uFE0F del domain \u2702\uFE0F"), callback_data: "deldomain_".concat(message.from.id) }],
                                 [{ text: build("\uD83D\uDD2E add skin \uD83D\uDD2E"), callback_data: "addskin_".concat(message.from.id) }, { text: build("\uD83E\uDE93 del skin \uD83E\uDE93"), callback_data: "delskin_".concat(message.from.id) }],
                                 [{ text: build("\uD83D\uDCB0 change price \uD83D\uDCB0"), callback_data: "changeprice_".concat(message.from.id) }, { text: build("\uD83C\uDF00 domains \uD83C\uDF00"), callback_data: "cdomains_".concat(message.from.id) }],
+                                [{ text: build("\uD83E\uDE99 free coins \uD83E\uDE99"), callback_data: "freecoins_".concat(message.from.id) }]
                             ]
                         }
                     })];
-            case 10: return [2 /*return*/, _a.sent()];
-            case 11:
-                if (!got.has(message.from.id)) return [3 /*break*/, 45];
+            case 11: return [2 /*return*/, _a.sent()];
+            case 12:
+                if (!got.has(message.from.id)) return [3 /*break*/, 52];
                 userstep = got.get(message.from.id);
-                if (!(userstep === "gettoken")) return [3 /*break*/, 13];
+                if (!(userstep === "gettoken")) return [3 /*break*/, 14];
                 if (message.text.length === 0) {
                     return [2 /*return*/];
                 }
@@ -243,9 +299,9 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                 return [4 /*yield*/, bot.sendMessage(message.chat.id, "چت آیدی گروهتون جهت ارسال اطلاعات به اونجا رو ارسال کنید", {
                         reply_to_message_id: message.message_id
                     })];
-            case 12: return [2 /*return*/, _a.sent()];
-            case 13:
-                if (!(userstep === "getchat")) return [3 /*break*/, 15];
+            case 13: return [2 /*return*/, _a.sent()];
+            case 14:
+                if (!(userstep === "getchat")) return [3 /*break*/, 16];
                 if (!/^-?\d+$/.test(message.text)) {
                     return [2 /*return*/];
                 }
@@ -295,53 +351,60 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                                                                 reply_to_message_id: message.message_id
                                                             })];
                                                     }
-                                                    return [4 /*yield*/, domaindb.addContainer(stat.port.name, domain.id, function () { })];
+                                                    return [4 /*yield*/, domaindb.addInclude(domain.id, stat.port.name, function () { })];
                                                 case 1:
                                                     _a.sent();
-                                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "\u2705 \u067E\u0648\u0631\u062A \u0628\u0627 \u0645\u0648\u0641\u0642\u06CC\u062A \u062F\u0631 \u062F\u06CC\u062A\u0627\u0628\u06CC\u0633 \u062B\u0628\u062A \u0634\u062F\n\n\uD83D\uDD87\uFE0F | \u067E\u0648\u0631\u062A : <code>".concat(stat.port.name, "</code>\n\u23F3 | \u062E\u0631\u06CC\u062F\u0627\u0631\u06CC \u0634\u062F\u0647 \u062F\u0631 ").concat(new Date(), "\n\uD83D\uDD87\uFE0F | \u062F\u0627\u0645\u06CC\u0646 : ").concat(dtype, "\n\uD83E\uDE84 | \u0642\u0627\u0644\u0628 : ").concat(_que_1.skin, "\n\uD83D\uDCAC | \u0686\u062A : ").concat(_inf_1.chat, "\n\uD83E\uDD16 | \u062A\u0648\u06A9\u0646 : <code>").concat(_inf_1.token, "</code>\n\n\uD83D\uDD2E | \u0686\u0646\u062F \u0644\u062D\u0638\u0647 \u0635\u0628\u0631 \u06A9\u0646\u06CC\u062F \u062A\u0627 \u062F\u0631\u06AF\u0627\u0647\u062A\u0648\u0646 \u0622\u0646\u0644\u0627\u06CC\u0646 \u0628\u0634\u0647"), {
+                                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "\u2705 \u067E\u0648\u0631\u062A \u0628\u0627 \u0645\u0648\u0641\u0642\u06CC\u062A \u062F\u0631 \u062F\u06CC\u062A\u0627\u0628\u06CC\u0633 \u062B\u0628\u062A \u0634\u062F\n\n\uD83D\uDD87\uFE0F | \u067E\u0648\u0631\u062A : <code>".concat(stat.port.name, "</code>\n\u23F3 | \u062E\u0631\u06CC\u062F\u0627\u0631\u06CC \u0634\u062F\u0647 \u062F\u0631 ").concat(new Date(), "\n\uD83D\uDD87\uFE0F | \u062F\u0627\u0645\u06CC\u0646 : ").concat(dtype, "\n\uD83E\uDE84 | \u0642\u0627\u0644\u0628 : ").concat(_que_1.skin, "\n\uD83D\uDCAC | \u0686\u062A : ").concat(_inf_1.chat, "\n\uD83E\uDD16 | \u062A\u0648\u06A9\u0646 : <code>").concat(_inf_1.token, "</code>\n\n\uD83D\uDD2E | \u06CC\u06A9 \u062F\u0642\u06CC\u0642\u0647 \u0648 \u0633\u06CC \u062B\u0627\u0646\u06CC\u0647 \u0635\u0628\u0631 \u06A9\u0646\u06CC\u062F \u062A\u0627 \u062F\u0631\u06AF\u0627\u0647\u062A\u0648\u0646 \u0622\u0646\u0644\u0627\u06CC\u0646 \u0628\u0634\u0647"), {
                                                             reply_to_message_id: message.message_id,
                                                             parse_mode: "HTML"
                                                         }).then(function () { return __awaiter(void 0, void 0, void 0, function () {
                                                             return __generator(this, function (_a) {
-                                                                switch (_a.label) {
-                                                                    case 0: return [4 /*yield*/, axios.post(domain.durl + "/add-dargah", JSON.stringify({ port: stat.port.name, skin: _que_1.skin }), {
-                                                                            headers: {
-                                                                                "Content-Type": "application/json"
-                                                                            }
-                                                                        }).then(function (resp) { return __awaiter(void 0, void 0, void 0, function () {
-                                                                            var _d, e_1;
-                                                                            return __generator(this, function (_a) {
-                                                                                switch (_a.label) {
-                                                                                    case 0:
-                                                                                        _d = resp.data;
-                                                                                        _a.label = 1;
-                                                                                    case 1:
-                                                                                        _a.trys.push([1, 6, , 8]);
-                                                                                        if (!_d.status) return [3 /*break*/, 3];
-                                                                                        return [4 /*yield*/, bot.sendMessage(message.chat.id, "\u2705 | \u062F\u0631\u06AF\u0627\u0647 \u0622\u0646\u0644\u0627\u06CC\u0646 \u0634\u062F\n\n\uD83D\uDD87\uFE0F | \u0644\u06CC\u0646\u06A9 : ".concat(_d.on))];
-                                                                                    case 2: return [2 /*return*/, _a.sent()];
-                                                                                    case 3: return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 | ".concat(_d.message))];
-                                                                                    case 4: return [2 /*return*/, _a.sent()];
-                                                                                    case 5: return [3 /*break*/, 8];
-                                                                                    case 6:
-                                                                                        e_1 = _a.sent();
-                                                                                        return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 | ".concat(e_1))];
-                                                                                    case 7: return [2 /*return*/, _a.sent()];
-                                                                                    case 8: return [2 /*return*/];
-                                                                                }
-                                                                            });
-                                                                        }); }).catch(function (e) { return __awaiter(void 0, void 0, void 0, function () {
-                                                                            return __generator(this, function (_a) {
-                                                                                switch (_a.label) {
-                                                                                    case 0: return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 | ".concat(e))];
-                                                                                    case 1: return [2 /*return*/, _a.sent()];
-                                                                                }
-                                                                            });
-                                                                        }); })];
-                                                                    case 1:
-                                                                        _a.sent();
-                                                                        return [2 /*return*/];
-                                                                }
+                                                                setTimeout(function () { return __awaiter(void 0, void 0, void 0, function () {
+                                                                    return __generator(this, function (_a) {
+                                                                        switch (_a.label) {
+                                                                            case 0: return [4 /*yield*/, axios.post(domain.durl + "/add-dargah", { port: stat.port.name, skin: _que_1.skin, domain: domain.durl }, {
+                                                                                    headers: {
+                                                                                        "Content-Type": "application/json"
+                                                                                    }
+                                                                                }).then(function (resp) { return __awaiter(void 0, void 0, void 0, function () {
+                                                                                    var _d, e_1;
+                                                                                    return __generator(this, function (_a) {
+                                                                                        switch (_a.label) {
+                                                                                            case 0:
+                                                                                                console.log(resp.status);
+                                                                                                console.log(resp.data);
+                                                                                                _d = resp.data;
+                                                                                                _a.label = 1;
+                                                                                            case 1:
+                                                                                                _a.trys.push([1, 6, , 8]);
+                                                                                                if (!_d.status) return [3 /*break*/, 3];
+                                                                                                return [4 /*yield*/, bot.sendMessage(message.chat.id, "\u2705 | \u062F\u0631\u06AF\u0627\u0647 \u0622\u0646\u0644\u0627\u06CC\u0646 \u0634\u062F\n\n\uD83D\uDD87\uFE0F | \u0644\u06CC\u0646\u06A9 : ".concat(_d.on))];
+                                                                                            case 2: return [2 /*return*/, _a.sent()];
+                                                                                            case 3: return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 | ".concat(_d.message))];
+                                                                                            case 4: return [2 /*return*/, _a.sent()];
+                                                                                            case 5: return [3 /*break*/, 8];
+                                                                                            case 6:
+                                                                                                e_1 = _a.sent();
+                                                                                                return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 | ".concat(e_1))];
+                                                                                            case 7: return [2 /*return*/, _a.sent()];
+                                                                                            case 8: return [2 /*return*/];
+                                                                                        }
+                                                                                    });
+                                                                                }); }).catch(function (e) { return __awaiter(void 0, void 0, void 0, function () {
+                                                                                    return __generator(this, function (_a) {
+                                                                                        switch (_a.label) {
+                                                                                            case 0: return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 | ".concat(e))];
+                                                                                            case 1: return [2 /*return*/, _a.sent()];
+                                                                                        }
+                                                                                    });
+                                                                                }); })];
+                                                                            case 1:
+                                                                                _a.sent();
+                                                                                return [2 /*return*/];
+                                                                        }
+                                                                    });
+                                                                }); }, 90000);
+                                                                return [2 /*return*/];
                                                             });
                                                         }); })];
                                                 case 2:
@@ -356,12 +419,12 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                             }
                         });
                     }); })];
-            case 14:
-                _a.sent();
-                return [3 /*break*/, 45];
             case 15:
-                if (!(userstep === "banuser")) return [3 /*break*/, 20];
-                if (!/^\d+$/.test(message.text)) return [3 /*break*/, 17];
+                _a.sent();
+                return [3 /*break*/, 52];
+            case 16:
+                if (!(userstep === "banuser")) return [3 /*break*/, 21];
+                if (!/^\d+$/.test(message.text)) return [3 /*break*/, 18];
                 got.delete(message.from.id);
                 return [4 /*yield*/, userdb.ban(parseInt(message.text), function (d) { return __awaiter(void 0, void 0, void 0, function () {
                         var _a;
@@ -374,10 +437,10 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                             }
                         });
                     }); })];
-            case 16:
+            case 17:
                 _a.sent();
-                return [3 /*break*/, 19];
-            case 17: return [4 /*yield*/, userdb.getUserByPort(message.text, function (user) { return __awaiter(void 0, void 0, void 0, function () {
+                return [3 /*break*/, 20];
+            case 18: return [4 /*yield*/, userdb.getUserByPort(message.text, function (user) { return __awaiter(void 0, void 0, void 0, function () {
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
@@ -403,13 +466,13 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                         }
                     });
                 }); })];
-            case 18:
+            case 19:
                 _a.sent();
-                _a.label = 19;
-            case 19: return [3 /*break*/, 45];
-            case 20:
-                if (!(userstep === "unbanuser")) return [3 /*break*/, 25];
-                if (!/^\d+$/.test(message.text)) return [3 /*break*/, 22];
+                _a.label = 20;
+            case 20: return [3 /*break*/, 52];
+            case 21:
+                if (!(userstep === "unbanuser")) return [3 /*break*/, 26];
+                if (!/^\d+$/.test(message.text)) return [3 /*break*/, 23];
                 got.delete(message.from.id);
                 return [4 /*yield*/, userdb.unban(parseInt(message.text), function (d) { return __awaiter(void 0, void 0, void 0, function () {
                         var _a;
@@ -422,10 +485,10 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                             }
                         });
                     }); })];
-            case 21:
+            case 22:
                 _a.sent();
-                return [3 /*break*/, 24];
-            case 22: return [4 /*yield*/, userdb.getUserByPort(message.text, function (user) { return __awaiter(void 0, void 0, void 0, function () {
+                return [3 /*break*/, 25];
+            case 23: return [4 /*yield*/, userdb.getUserByPort(message.text, function (user) { return __awaiter(void 0, void 0, void 0, function () {
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
@@ -451,12 +514,12 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                         }
                     });
                 }); })];
-            case 23:
+            case 24:
                 _a.sent();
-                _a.label = 24;
-            case 24: return [3 /*break*/, 45];
-            case 25:
-                if (!(userstep === "brdcastmessage")) return [3 /*break*/, 27];
+                _a.label = 25;
+            case 25: return [3 /*break*/, 52];
+            case 26:
+                if (!(userstep === "brdcastmessage")) return [3 /*break*/, 28];
                 return [4 /*yield*/, bot.sendMessage(message.chat.id, "\u06A9\u0645\u06CC \u0635\u0628\u0631 ...", {
                         reply_to_message_id: message.message_id
                     }).then(function (newMsg) { return __awaiter(void 0, void 0, void 0, function () {
@@ -509,13 +572,13 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                             }
                         });
                     }); })];
-            case 26:
-                _a.sent();
-                return [3 /*break*/, 45];
             case 27:
-                if (!(userstep === "adddomain")) return [3 /*break*/, 30];
-                if (!(message.text.length !== 0)) return [3 /*break*/, 29];
-                if (!/^https?:\/\/(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[^\s]*)?$/.test(message.text)) {
+                _a.sent();
+                return [3 /*break*/, 52];
+            case 28:
+                if (!(userstep === "adddomain")) return [3 /*break*/, 31];
+                if (!(message.text.length !== 0)) return [3 /*break*/, 30];
+                if (!/^https?:\/\/(?:(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}|\d{1,3}(?:\.\d{1,3}){3})(?::\d{1,5})?(?:\/[^\s]*)?$/.test(message.text)) {
                     return [2 /*return*/];
                 }
                 _url = new URL(message.text);
@@ -536,14 +599,14 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                             return [2 /*return*/];
                         });
                     }); })];
-            case 28:
+            case 29:
                 _a.sent();
-                _a.label = 29;
-            case 29: return [3 /*break*/, 45];
-            case 30:
-                if (!(userstep === "deldomain")) return [3 /*break*/, 35];
-                if (!(message.text.length !== 0)) return [3 /*break*/, 34];
-                if (!/^https?:\/\/(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[^\s]*)?$/.test(message.text)) return [3 /*break*/, 32];
+                _a.label = 30;
+            case 30: return [3 /*break*/, 52];
+            case 31:
+                if (!(userstep === "deldomain")) return [3 /*break*/, 36];
+                if (!(message.text.length !== 0)) return [3 /*break*/, 35];
+                if (!/^https?:\/\/(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[^\s]*)?$/.test(message.text)) return [3 /*break*/, 33];
                 _url = new URL(message.text);
                 return [4 /*yield*/, domaindb.getDomainByDURL(_url.origin, function (data) { return __awaiter(void 0, void 0, void 0, function () {
                         return __generator(this, function (_a) {
@@ -571,10 +634,10 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                             }
                         });
                     }); })];
-            case 31:
+            case 32:
                 _a.sent();
-                return [3 /*break*/, 34];
-            case 32: return [4 /*yield*/, domaindb.getDomainByID(message.text, function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                return [3 /*break*/, 35];
+            case 33: return [4 /*yield*/, domaindb.getDomainByID(message.text, function (data) { return __awaiter(void 0, void 0, void 0, function () {
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
@@ -600,12 +663,12 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                         }
                     });
                 }); })];
-            case 33:
+            case 34:
                 _a.sent();
-                _a.label = 34;
-            case 34: return [3 /*break*/, 45];
-            case 35:
-                if (!(userstep === "addskin")) return [3 /*break*/, 37];
+                _a.label = 35;
+            case 35: return [3 /*break*/, 52];
+            case 36:
+                if (!(userstep === "addskin")) return [3 /*break*/, 38];
                 if (message.text.length === 0) {
                     return [2 /*return*/];
                 }
@@ -628,11 +691,11 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                             }
                         });
                     }); })];
-            case 36:
-                _a.sent();
-                return [3 /*break*/, 45];
             case 37:
-                if (!(userstep === "getskinnameforadd")) return [3 /*break*/, 39];
+                _a.sent();
+                return [3 /*break*/, 52];
+            case 38:
+                if (!(userstep === "getskinnameforadd")) return [3 /*break*/, 40];
                 if (message.text.length === 0) {
                     return [2 /*return*/];
                 }
@@ -667,11 +730,11 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                             }
                         });
                     }); })];
-            case 38:
-                _a.sent();
-                return [3 /*break*/, 45];
             case 39:
-                if (!(userstep === "delskin")) return [3 /*break*/, 41];
+                _a.sent();
+                return [3 /*break*/, 52];
+            case 40:
+                if (!(userstep === "delskin")) return [3 /*break*/, 42];
                 if (message.text.length === 0) {
                     return [2 /*return*/];
                 }
@@ -694,11 +757,11 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                             }
                         });
                     }); })];
-            case 40:
-                _a.sent();
-                return [3 /*break*/, 45];
             case 41:
-                if (!(userstep === "getskinnamefordel")) return [3 /*break*/, 43];
+                _a.sent();
+                return [3 /*break*/, 52];
+            case 42:
+                if (!(userstep === "getskinnamefordel")) return [3 /*break*/, 44];
                 if (message.text.length === 0) {
                     return [2 /*return*/];
                 }
@@ -733,14 +796,15 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                             }
                         });
                     }); })];
-            case 42:
-                _a.sent();
-                return [3 /*break*/, 45];
             case 43:
-                if (!(userstep === "changeprice")) return [3 /*break*/, 45];
+                _a.sent();
+                return [3 /*break*/, 52];
+            case 44:
+                if (!(userstep === "changeprice")) return [3 /*break*/, 46];
                 if (!/^\d+$/.test(message.text)) {
                     return [2 /*return*/];
                 }
+                got.delete(message.from.id);
                 price = parseInt(message.text);
                 return [4 /*yield*/, fs.promises.writeFile(path.join(__dirname, "price.txt"), "".concat(price), { flag: 'w' }).then(function () { return __awaiter(void 0, void 0, void 0, function () {
                         return __generator(this, function (_a) {
@@ -761,10 +825,48 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                             }
                         });
                     }); })];
-            case 44:
+            case 45:
                 _a.sent();
-                _a.label = 45;
-            case 45: return [2 /*return*/];
+                return [3 /*break*/, 52];
+            case 46:
+                if (!(userstep === "freecoins")) return [3 /*break*/, 48];
+                if (!/^\d+$/.test(message.text)) {
+                    return [2 /*return*/];
+                }
+                got.set(message.from.id, "getuserffreecoins");
+                cns.set(message.from.id, { coins: parseInt(message.text) });
+                return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDC64 \u0622\u06CC\u062F\u06CC \u0639\u062F\u062F\u06CC \u0641\u0631\u062F \u0645\u0648\u0631\u062F \u0646\u0638\u0631 \u0631\u0648 \u0627\u0631\u0633\u0627\u0644 \u06A9\u0646\u06CC\u062F", {
+                        reply_to_message_id: message.message_id
+                    })];
+            case 47: return [2 /*return*/, _a.sent()];
+            case 48:
+                if (!(userstep === "getuserffreecoins")) return [3 /*break*/, 52];
+                if (!/^\d+$/.test(message.text)) {
+                    return [2 /*return*/];
+                }
+                if (!!cns.has(message.from.id)) return [3 /*break*/, 50];
+                return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 \u067E\u0631\u0648\u0633\u0647 \u0627\u06CC \u06CC\u0627\u0641\u062A \u0646\u0634\u062F", {
+                        reply_to_message_id: message.message_id
+                    })];
+            case 49: return [2 /*return*/, _a.sent()];
+            case 50:
+                coins = cns.get(message.from.id);
+                cns.delete(message.from.id);
+                return [4 /*yield*/, userdb.charge(message.from.id, coins.coins, function (datax) { return __awaiter(void 0, void 0, void 0, function () {
+                        var _a;
+                        return __generator(this, function (_b) {
+                            switch (_b.label) {
+                                case 0: return [4 /*yield*/, bot.sendMessage(message.chat.id, "".concat(datax.status === true ? '✅' : '🔴', " | ").concat((_a = datax.message) !== null && _a !== void 0 ? _a : "".concat(message.text, " \u0633\u06A9\u0647 \u0631\u06CC\u062E\u062A\u0647 \u0634\u062F")), {
+                                        reply_to_message_id: message.message_id
+                                    })];
+                                case 1: return [2 /*return*/, _b.sent()];
+                            }
+                        });
+                    }); })];
+            case 51:
+                _a.sent();
+                _a.label = 52;
+            case 52: return [2 /*return*/];
         }
     });
 }); });
@@ -784,7 +886,7 @@ bot.on("callback_query", function (call) { return __awaiter(void 0, void 0, void
                 spl = (_b = call.data.split("_")) !== null && _b !== void 0 ? _b : [];
                 uid = parseInt(spl[1]);
                 mode = spl[0];
-                if (!(call.from.id === uid)) return [3 /*break*/, 24];
+                if (!(call.from.id === uid)) return [3 /*break*/, 26];
                 _a = mode;
                 switch (_a) {
                     case "buy": return [3 /*break*/, 1];
@@ -798,9 +900,10 @@ bot.on("callback_query", function (call) { return __awaiter(void 0, void 0, void
                     case "addskin": return [3 /*break*/, 16];
                     case "delskin": return [3 /*break*/, 18];
                     case "changeprice": return [3 /*break*/, 20];
-                    case "cdomains": return [3 /*break*/, 22];
+                    case "freecoins": return [3 /*break*/, 22];
+                    case "cdomains": return [3 /*break*/, 24];
                 }
-                return [3 /*break*/, 24];
+                return [3 /*break*/, 26];
             case 1:
                 userdb.getUserById(call.from.id, function (user) {
                     if (!user) {
@@ -831,13 +934,13 @@ bot.on("callback_query", function (call) { return __awaiter(void 0, void 0, void
                                 });
                             }
                             catch (err) {
-                                console.log("Invalid URL:", _dom.durl, err);
+                                console.error("Invalid URL:", _dom.durl, err);
                             }
                         }
                         var thok = [];
                         _endpoints.forEach(function (info, _id) {
                             thok.push({
-                                text: info.endpoint,
+                                text: info.endpoint.length !== 0 ? info.endpoint : info.href,
                                 callback_data: "add_".concat(call.from.id, "_").concat(_id)
                             });
                         });
@@ -849,7 +952,7 @@ bot.on("callback_query", function (call) { return __awaiter(void 0, void 0, void
                         }).catch(function (err) { return console.log("EDIT MESSAGE ERROR:", err); });
                     });
                 });
-                return [3 /*break*/, 24];
+                return [3 /*break*/, 26];
             case 2:
                 _domainid_1 = spl[2];
                 return [4 /*yield*/, userdb.getUserById(call.from.id, function (user) { return __awaiter(void 0, void 0, void 0, function () {
@@ -907,7 +1010,7 @@ bot.on("callback_query", function (call) { return __awaiter(void 0, void 0, void
                     }); })];
             case 3:
                 _c.sent();
-                return [3 /*break*/, 24];
+                return [3 /*break*/, 26];
             case 4:
                 skin = spl[2];
                 qdata_1 = que.get(call.from.id);
@@ -971,7 +1074,7 @@ bot.on("callback_query", function (call) { return __awaiter(void 0, void 0, void
                     }); })];
             case 5:
                 _c.sent();
-                return [3 /*break*/, 24];
+                return [3 /*break*/, 26];
             case 6:
                 got.set(call.from.id, "banuser");
                 return [4 /*yield*/, bot.answerCallbackQuery(call.id, {
@@ -980,7 +1083,7 @@ bot.on("callback_query", function (call) { return __awaiter(void 0, void 0, void
                     })];
             case 7:
                 _c.sent();
-                return [3 /*break*/, 24];
+                return [3 /*break*/, 26];
             case 8:
                 got.set(call.from.id, "unbanuser");
                 return [4 /*yield*/, bot.answerCallbackQuery(call.id, {
@@ -989,7 +1092,7 @@ bot.on("callback_query", function (call) { return __awaiter(void 0, void 0, void
                     })];
             case 9:
                 _c.sent();
-                return [3 /*break*/, 24];
+                return [3 /*break*/, 26];
             case 10:
                 got.set(call.from.id, "brdcastmessage");
                 return [4 /*yield*/, bot.answerCallbackQuery(call.id, {
@@ -998,7 +1101,7 @@ bot.on("callback_query", function (call) { return __awaiter(void 0, void 0, void
                     })];
             case 11:
                 _c.sent();
-                return [3 /*break*/, 24];
+                return [3 /*break*/, 26];
             case 12:
                 got.set(call.from.id, "adddomain");
                 return [4 /*yield*/, bot.answerCallbackQuery(call.id, {
@@ -1007,7 +1110,7 @@ bot.on("callback_query", function (call) { return __awaiter(void 0, void 0, void
                     })];
             case 13:
                 _c.sent();
-                return [3 /*break*/, 24];
+                return [3 /*break*/, 26];
             case 14:
                 got.set(call.from.id, "deldomain");
                 return [4 /*yield*/, bot.answerCallbackQuery(call.id, {
@@ -1016,7 +1119,7 @@ bot.on("callback_query", function (call) { return __awaiter(void 0, void 0, void
                     })];
             case 15:
                 _c.sent();
-                return [3 /*break*/, 24];
+                return [3 /*break*/, 26];
             case 16:
                 got.set(call.from.id, "addskin");
                 return [4 /*yield*/, bot.answerCallbackQuery(call.id, {
@@ -1025,7 +1128,7 @@ bot.on("callback_query", function (call) { return __awaiter(void 0, void 0, void
                     })];
             case 17:
                 _c.sent();
-                return [3 /*break*/, 24];
+                return [3 /*break*/, 26];
             case 18:
                 got.set(call.from.id, "delskin");
                 return [4 /*yield*/, bot.answerCallbackQuery(call.id, {
@@ -1034,7 +1137,7 @@ bot.on("callback_query", function (call) { return __awaiter(void 0, void 0, void
                     })];
             case 19:
                 _c.sent();
-                return [3 /*break*/, 24];
+                return [3 /*break*/, 26];
             case 20:
                 got.set(call.from.id, "changeprice");
                 return [4 /*yield*/, bot.answerCallbackQuery(call.id, {
@@ -1043,8 +1146,17 @@ bot.on("callback_query", function (call) { return __awaiter(void 0, void 0, void
                     })];
             case 21:
                 _c.sent();
-                return [3 /*break*/, 24];
-            case 22: return [4 /*yield*/, domaindb.getDomains(function (domains) { return __awaiter(void 0, void 0, void 0, function () {
+                return [3 /*break*/, 26];
+            case 22:
+                got.set(call.from.id, "freecoins");
+                return [4 /*yield*/, bot.answerCallbackQuery(call.id, {
+                        text: "مقدار سکه هایی که حساب رو شارژ کنه",
+                        show_alert: true
+                    })];
+            case 23:
+                _c.sent();
+                return [3 /*break*/, 26];
+            case 24: return [4 /*yield*/, domaindb.getDomains(function (domains) { return __awaiter(void 0, void 0, void 0, function () {
                     var txt, _i, domains_3, domain, _chunk, _a, _chunk_1, ch;
                     return __generator(this, function (_b) {
                         switch (_b.label) {
@@ -1077,10 +1189,10 @@ bot.on("callback_query", function (call) { return __awaiter(void 0, void 0, void
                         }
                     });
                 }); })];
-            case 23:
+            case 25:
                 _c.sent();
-                return [3 /*break*/, 24];
-            case 24: return [2 /*return*/];
+                return [3 /*break*/, 26];
+            case 26: return [2 /*return*/];
         }
     });
 }); });
@@ -1116,7 +1228,6 @@ function safeTelegramChunk(text, max) {
     var lines = text.split("\n");
     for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
         var line = lines_1[_i];
-        // +1 to re-add the newline
         if ((current + line + "\n").length > max) {
             pushChunk();
         }

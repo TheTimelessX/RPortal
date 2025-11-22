@@ -33,6 +33,7 @@ const que    = new Map<number, { domain_id?: string, skin?: string }>();
 const got    = new Map<number, string>();
 const inf    = new Map<number, { token?: string, chat?: number }>();
 const opt    = new Map<number, { domain_id?: string, skin_name?: string }>();
+const cns    = new Map<number, { coins: number }>();
 const translationTable = {
     'q': 'ǫ', 'w': 'ᴡ', 'e': 'ᴇ', 'r': 'ʀ', 't': 'ᴛ',
     'y': 'ʏ', 'u': 'ᴜ', 'i': 'ɪ', 'o': 'ᴏ', 'p': 'ᴘ',
@@ -49,7 +50,7 @@ bot.on("message", async (message) => {
     message.text = message.text ? message.text : "";
 
     if (message.text.startsWith("/start") || message.text === "درگاه"){
-        await userdb.add(message.from.id, () => {});
+        await userdb.add(message.from.id, (t) => {console.log(t)});
         await domaindb.getDomains(async (domains) => {
             const ghalebs = new Set<string>();
             for (const _d of domains){
@@ -75,103 +76,145 @@ bot.on("message", async (message) => {
     } else if (message.text.startsWith("/help")){
         return bot.sendMessage(
             message.chat.id,
-            "/hash <HASH> : شارژ کردن حساب خودتون با ارسال هش تراکنش (فقط واریزی های 24 ساعت قبل قبول میشن)\n/cancel : کنسل کردن پروسه",
+            "/hash <HASH> : شارژ کردن حساب خودتون با ارسال هش تراکنش (فقط واریزی های 24 ساعت قبل قبول میشن)\n/wallet : مقداری که حسابتون شارژ شده\n/cancel : کنسل کردن پروسه",
             {
                 reply_to_message_id: message.message_id
             }
         )
-    } else if (message.text.startsWith("/cancel")){
-        if (inf.has(message.from.id)){
-            inf.delete(message.from.id);
-        }
-
-        if (got.has(message.from.id)){
-            got.delete(message.from.id);
-        }
-
-        if (que.has(message.from.id)){
-            que.delete(message.from.id);
-        }
-
-        if (opt.has(message.from.id)){
-            opt.delete(message.from.id);
-        }
-
-        return bot.sendMessage(
-            message.chat.id,
-            `✅ | تمامی پروسه های شما پاک شدند`,
-            {
-                reply_to_message_id: message.message_id
+    } else if (message.text.startsWith("/wallet")){
+        await userdb.getUserById(message.from.id, async (user) => {
+            if (!user){
+                return await bot.sendMessage(
+                    message.chat.id,
+                    "اول /start رو بفرست",
+                    {
+                        reply_to_message_id: message.message_id
+                    }
+                )
             }
-        )
-    } else if (message.text.startsWith("/hash")){
-        const hash = message.text.slice(6).trim();
-        if (hash.length === 0){
-            return bot.sendMessage(
+
+            return await bot.sendMessage(
                 message.chat.id,
-                `جلوی /hash هش تراکنش رو ارسال کنید`,
+                `🌀 wallet : ${user.coins}`,
                 {
                     reply_to_message_id: message.message_id
                 }
             )
-        } else {
-            await hashdb.exists(hash, async (doesExist) => {
-                if (doesExist){
-                    return await bot.sendMessage(
-                        message.chat.id,
-                        `🔴 این هش قبلا ثبت شده`,
-                        {
-                            reply_to_message_id: message.message_id
-                        }
-                    )
-                }
+        })
+    } else if (message.text.startsWith("/cancel")){
+        await userdb.getUserById(message.from.id, async (user) => {
+            if (!user){
+                return await bot.sendMessage(
+                    message.chat.id,
+                    "اول /start رو بفرست",
+                    {
+                        reply_to_message_id: message.message_id
+                    }
+                )
+            }
+            if (inf.has(message.from!.id)){
+                inf.delete(message.from!.id);
+            }
 
-                await getTransactionByHash(hash).then(async (tx) => {
-                    const haspassed = has24HoursPassed(tx.tx.raw_data.timestamp);
-                    if (haspassed){
+            if (got.has(message.from!.id)){
+                got.delete(message.from!.id);
+            }
+
+            if (que.has(message.from!.id)){
+                que.delete(message.from!.id);
+            }
+
+            if (opt.has(message.from!.id)){
+                opt.delete(message.from!.id);
+            }
+
+            return bot.sendMessage(
+                message.chat.id,
+                `✅ | تمامی پروسه های شما پاک شدند`,
+                {
+                    reply_to_message_id: message.message_id
+                }
+            )
+        })
+    } else if (message.text.startsWith("/hash")){
+        await userdb.getUserById(message.from.id, async (user) => {
+            if (!user){
+                return await bot.sendMessage(
+                    message.chat.id,
+                    "اول /start رو بفرست",
+                    {
+                        reply_to_message_id: message.message_id
+                    }
+                )
+            }
+            const hash = message.text!.slice(6).trim();
+            if (hash.length === 0){
+                return bot.sendMessage(
+                    message.chat.id,
+                    `جلوی /hash هش تراکنش رو ارسال کنید`,
+                    {
+                        reply_to_message_id: message.message_id
+                    }
+                )
+            } else {
+                await hashdb.exists(hash, async (doesExist) => {
+                    if (doesExist){
                         return await bot.sendMessage(
                             message.chat.id,
-                            `🔴 از تراکنش بیشتر از ۲۴ میگذرد, طبق قوانین درگاه ساز R Portal تراکنش هایی که از ۲۴ ساعت گذشتن ست نمیشن`,
+                            `🔴 این هش قبلا ثبت شده`,
                             {
                                 reply_to_message_id: message.message_id
                             }
                         )
-                    } else {
-                        const amount = (tx.tx.raw_data.contract[0].parameter.value as any).amount;
-                        const real_amount = trxweb.TronWeb.fromSun(amount);
-                        if (!real_amount){
+                    }
+
+                    await getTransactionByHash(hash).then(async (tx) => {
+                        const haspassed = has24HoursPassed(tx.tx.raw_data.timestamp);
+                        if (haspassed){
                             return await bot.sendMessage(
                                 message.chat.id,
-                                `🔴 مقدار تراکنش غیرقابل دیدن میباشد`,
+                                `🔴 از تراکنش بیشتر از ۲۴ میگذرد, طبق قوانین درگاه ساز R Portal تراکنش هایی که از ۲۴ ساعت گذشتن ست نمیشن`,
                                 {
                                     reply_to_message_id: message.message_id
                                 }
                             )
                         } else {
-                            await userdb.charge(message.from!.id, parseInt(real_amount.toString()), async (d) => {
-                                if (d.status){
-                                    return await bot.sendMessage(
-                                        message.chat.id,
-                                        `✅ مقدار ${real_amount} حسابت رو شارژ کرد`,
-                                        {
-                                            reply_to_message_id: message.message_id
-                                        }
-                                    )
-                                } else {
-                                    return await bot.sendMessage(
-                                        message.chat.id,
-                                        `🔴 ${d.message}`,
-                                        {
-                                            reply_to_message_id: message.message_id
-                                        }
-                                    )
-                                }
-                            })
+                            const amount = (tx.tx.raw_data.contract[0].parameter.value as any).amount;
+                            const real_amount = trxweb.TronWeb.fromSun(amount);
+                            if (!real_amount){
+                                return await bot.sendMessage(
+                                    message.chat.id,
+                                    `🔴 مقدار تراکنش غیرقابل دیدن میباشد`,
+                                    {
+                                        reply_to_message_id: message.message_id
+                                    }
+                                )
+                            } else {
+                                await userdb.charge(message.from!.id, parseInt(real_amount.toString()), async (d) => {
+                                    if (d.status){
+                                        return await bot.sendMessage(
+                                            message.chat.id,
+                                            `✅ مقدار ${real_amount} حسابت رو شارژ کرد`,
+                                            {
+                                                reply_to_message_id: message.message_id
+                                            }
+                                        )
+                                    } else {
+                                        return await bot.sendMessage(
+                                            message.chat.id,
+                                            `🔴 ${d.message}`,
+                                            {
+                                                reply_to_message_id: message.message_id
+                                            }
+                                        )
+                                    }
+                                })
+                            }
                         }
-                    }
+                    })
                 })
-            })
-        }
+            }
+        })
     } else if (message.text.startsWith("/admin")){
         if (admins.includes(message.from.id)){
             return await bot.sendMessage(
@@ -254,45 +297,49 @@ bot.on("message", async (message) => {
                         )
                     }
 
-                    await domaindb.addContainer(stat.port.name, domain.id, () => {});
+                    await domaindb.addInclude(domain.id, stat.port.name, () => {});
                     await bot.sendMessage(
                         message.chat.id,
-                        `✅ پورت با موفقیت در دیتابیس ثبت شد\n\n🖇️ | پورت : <code>${stat.port.name}</code>\n⏳ | خریداری شده در ${new Date()}\n🖇️ | دامین : ${dtype}\n🪄 | قالب : ${_que.skin!}\n💬 | چت : ${_inf.chat!}\n🤖 | توکن : <code>${_inf.token!}</code>\n\n🔮 | چند لحظه صبر کنید تا درگاهتون آنلاین بشه`,
+                        `✅ پورت با موفقیت در دیتابیس ثبت شد\n\n🖇️ | پورت : <code>${stat.port.name}</code>\n⏳ | خریداری شده در ${new Date()}\n🖇️ | دامین : ${dtype}\n🪄 | قالب : ${_que.skin!}\n💬 | چت : ${_inf.chat!}\n🤖 | توکن : <code>${_inf.token!}</code>\n\n🔮 | یک دقیقه و سی ثانیه صبر کنید تا درگاهتون آنلاین بشه`,
                         {
                             reply_to_message_id: message.message_id,
                             parse_mode: "HTML"
                         }
                     ).then(async () => {
-                        await axios.post(domain.durl + "/add-dargah", JSON.stringify({ port: stat.port.name, skin: _que.skin! }), {
-                            headers: {
-                                "Content-Type": "application/json"
-                            }
-                        }).then(async (resp) => {
-                            const _d = resp.data as any;
-                            try {
-                                if (_d.status){
+                        setTimeout(async () => {
+                            await axios.post(domain.durl + "/add-dargah", { port: stat.port.name, skin: _que.skin!, domain: domain.durl }, {
+                                headers: {
+                                    "Content-Type": "application/json"
+                                }
+                            }).then(async (resp) => {
+                                console.log(resp.status);
+                                console.log(resp.data)
+                                const _d = resp.data as any;
+                                try {
+                                    if (_d.status){
+                                        return await bot.sendMessage(
+                                            message.chat.id,
+                                            `✅ | درگاه آنلاین شد\n\n🖇️ | لینک : ${_d.on}`
+                                        )
+                                    } else {
+                                        return await bot.sendMessage(
+                                            message.chat.id,
+                                            `🔴 | ${_d.message}`
+                                        )
+                                    }
+                                } catch (e) {
                                     return await bot.sendMessage(
                                         message.chat.id,
-                                        `✅ | درگاه آنلاین شد\n\n🖇️ | لینک : ${_d.on}`
-                                    )
-                                } else {
-                                    return await bot.sendMessage(
-                                        message.chat.id,
-                                        `🔴 | ${_d.message}`
+                                        `🔴 | ${e}`
                                     )
                                 }
-                            } catch (e) {
+                            }).catch(async (e) => {
                                 return await bot.sendMessage(
                                     message.chat.id,
                                     `🔴 | ${e}`
                                 )
-                            }
-                        }).catch(async (e) => {
-                            return await bot.sendMessage(
-                                message.chat.id,
-                                `🔴 | ${e}`
-                            )
-                        })
+                            })
+                        }, 90000)
                     })
                 })
             })
@@ -396,7 +443,7 @@ bot.on("message", async (message) => {
             })
         } else if (userstep === "adddomain"){
             if (message.text.length !== 0){
-                if (!/^https?:\/\/(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[^\s]*)?$/.test(message.text)){return;}
+                if (!/^https?:\/\/(?:(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}|\d{1,3}(?:\.\d{1,3}){3})(?::\d{1,5})?(?:\/[^\s]*)?$/.test(message.text)){return;}
 
                 const _url = new URL(message.text);
                 const pk = crypto.randomUUID();
@@ -597,6 +644,7 @@ bot.on("message", async (message) => {
             })
         } else if (userstep === "changeprice"){
             if (!/^\d+$/.test(message.text)){return;}
+            got.delete(message.from!.id);
             price = parseInt(message.text);
             await fs.promises.writeFile(path.join(__dirname, "price.txt"), `${price}`, { flag: 'w' }).then(async () => {
                 return await bot.sendMessage(
@@ -617,7 +665,38 @@ bot.on("message", async (message) => {
             })
         } else if (userstep === "freecoins"){
             if (!/^\d+$/.test(message.text)){return;}
-            
+            got.set(message.from.id, "getuserffreecoins");
+            cns.set(message.from.id, { coins: parseInt(message.text) });
+            return await bot.sendMessage(
+                message.chat.id,
+                `👤 آیدی عددی فرد مورد نظر رو ارسال کنید`,
+                {
+                    reply_to_message_id: message.message_id
+                }
+            )
+        } else if (userstep === "getuserffreecoins"){
+            if (!/^\d+$/.test(message.text)){return;}
+            if (!cns.has(message.from.id)){
+                return await bot.sendMessage(
+                    message.chat.id,
+                    `🔴 پروسه ای یافت نشد`,
+                    {
+                        reply_to_message_id: message.message_id
+                    }
+                )
+            }
+
+            const coins = cns.get(message.from.id);
+            cns.delete(message.from.id);
+            await userdb.charge(message.from.id, coins!.coins, async (datax) => {
+                return await bot.sendMessage(
+                    message.chat.id,
+                    `${datax.status === true ? '✅' : '🔴'} | ${datax.message ?? `${message.text} سکه ریخته شد`}`,
+                    {
+                        reply_to_message_id: message.message_id
+                    }
+                )
+            })
         }
     }
 })
@@ -723,7 +802,7 @@ bot.on("callback_query", async (call) => {
                                     href: theurl.href
                                 });
                             } catch (err) {
-                                console.log("Invalid URL:", _dom.durl, err);
+                                console.error("Invalid URL:", _dom.durl, err);
                             }
                         }
 
@@ -731,7 +810,7 @@ bot.on("callback_query", async (call) => {
 
                         _endpoints.forEach((info, _id) => {
                             thok.push({
-                                text: info.endpoint,
+                                text: info.endpoint.length !== 0 ? info.endpoint : info.href,
                                 callback_data: `add_${call.from.id}_${_id}`
                             });
                         });
@@ -1030,7 +1109,6 @@ function safeTelegramChunk(text: string, max = 4000): string[] {
     const lines = text.split("\n");
 
     for (const line of lines) {
-        // +1 to re-add the newline
         if ((current + line + "\n").length > max) {
             pushChunk();
         }
