@@ -1,2 +1,11 @@
 node_modules
 test.js
+s.html
+child/s.html
+child/t.js
+package-lock.json
+test.js
+t.js
+users.rdb
+domains.rdb
+hashes.rdb

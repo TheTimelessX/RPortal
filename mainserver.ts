@@ -1,6 +1,6 @@
-const main_token: string = "8441670596:AAFQVWOQI1c7TsG9sBrkBQiGp4QzEba6LyI";
-const bot_wallet: string = "TCymMoexTgT2J6UMLq7rScRdj3BjhTM6kL";
-const admins: number[]   = [8086331339];
+const main_token: string = "";
+const bot_wallet: string = "";
+const admins: number[]   = [];
 
 import { UserDatabase, HashDatabase, DomainDatabase } from "./database";
 import telegram from "node-telegram-bot-api";
@@ -169,6 +169,15 @@ bot.on("message", async (message) => {
                     }
 
                     await getTransactionByHash(hash).then(async (tx) => {
+                        if (tx.tx.Error){
+                            return await bot.sendMessage(
+                                message.chat.id,
+                                `🔴 تراکنش اشتباهه`,
+                                {
+                                    reply_to_message_id: message.message_id
+                                }
+                            )
+                        }
                         const haspassed = has24HoursPassed(tx.tx.raw_data.timestamp);
                         if (haspassed){
                             return await bot.sendMessage(
@@ -190,7 +199,7 @@ bot.on("message", async (message) => {
                                     }
                                 )
                             } else {
-                                await userdb.charge(message.from!.id, parseInt(real_amount.toString()), async (d) => {
+                                await userdb.charge(message.from!.id, Math.floor(parseInt(real_amount.toString())), async (d) => {
                                     if (d.status){
                                         return await bot.sendMessage(
                                             message.chat.id,
@@ -405,7 +414,7 @@ bot.on("message", async (message) => {
                     await userdb.unban(user.id, async (d) => {
                         return await bot.sendMessage(
                             message.chat.id,
-                            `${d.status === true ? '✅' : '🔴'} | ${d.message ?? "کاربر با موفقیت بن شد"}`,
+                            `${d.status === true ? '✅' : '🔴'} | ${d.message ?? "کاربر با موفقیت آن بن شد"}`,
                             {
                                 reply_to_message_id: message.message_id
                             }
@@ -414,6 +423,7 @@ bot.on("message", async (message) => {
                 })
             }
         } else if (userstep === "brdcastmessage"){
+            got.delete(message.from.id)
             await bot.sendMessage(
                 message.chat.id,
                 `کمی صبر ...`,
@@ -423,10 +433,15 @@ bot.on("message", async (message) => {
             ).then(async (newMsg) => {
                 let _sent_chats: number = 0;
                 await userdb.getUsers(async (users) => {
+                    const __sents: number[] = [];
                     for (const user of users){
+                        if (__sents.includes(user.id)){continue;}
+                        __sents.push(user.id);
                         await bot.forwardMessage(user.id, message.chat.id, message.message_id);
                         _sent_chats += 1;
                         for (const up of user.port){
+                            if (__sents.includes(up.chat)){continue;}
+                            __sents.push(up.chat);
                             await bot.forwardMessage(user.id, up.chat, message.message_id);
                             _sent_chats += 1;
                         }
@@ -447,6 +462,7 @@ bot.on("message", async (message) => {
 
                 const _url = new URL(message.text);
                 const pk = crypto.randomUUID();
+                got.delete(message.from.id)
                 await domaindb.addDomain(_url.origin, pk, async (data) => {
                     if (data.status){
                         return bot.sendMessage(
@@ -471,7 +487,7 @@ bot.on("message", async (message) => {
         } else if (userstep === "deldomain"){
             if (message.text.length !== 0){
                 if (/^https?:\/\/(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[^\s]*)?$/.test(message.text)){
-
+                    got.delete(message.from.id);
                     const _url = new URL(message.text);
                     await domaindb.getDomainByDURL(_url.origin, async (data) => {
                         if (!data) {
@@ -629,6 +645,7 @@ bot.on("message", async (message) => {
                     }
 
                     await domaindb.removeContainer(xpath.name, dom.id, async () => {})
+                    await axios.post(dom.durl + "/remove-skin", { skin: xpath.name }).then(() => {});
 
                     got.delete(message.from!.id);
                     opt.delete(message.from!.id);

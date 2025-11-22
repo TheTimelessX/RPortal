@@ -217,21 +217,27 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                                                         return __generator(this, function (_a) {
                                                             switch (_a.label) {
                                                                 case 0:
-                                                                    haspassed = has24HoursPassed(tx.tx.raw_data.timestamp);
-                                                                    if (!haspassed) return [3 /*break*/, 2];
-                                                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 \u0627\u0632 \u062A\u0631\u0627\u06A9\u0646\u0634 \u0628\u06CC\u0634\u062A\u0631 \u0627\u0632 \u06F2\u06F4 \u0645\u06CC\u06AF\u0630\u0631\u062F, \u0637\u0628\u0642 \u0642\u0648\u0627\u0646\u06CC\u0646 \u062F\u0631\u06AF\u0627\u0647 \u0633\u0627\u0632 R Portal \u062A\u0631\u0627\u06A9\u0646\u0634 \u0647\u0627\u06CC\u06CC \u06A9\u0647 \u0627\u0632 \u06F2\u06F4 \u0633\u0627\u0639\u062A \u06AF\u0630\u0634\u062A\u0646 \u0633\u062A \u0646\u0645\u06CC\u0634\u0646", {
+                                                                    if (!tx.tx.Error) return [3 /*break*/, 2];
+                                                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 \u062A\u0631\u0627\u06A9\u0646\u0634 \u0627\u0634\u062A\u0628\u0627\u0647\u0647", {
                                                                             reply_to_message_id: message.message_id
                                                                         })];
                                                                 case 1: return [2 /*return*/, _a.sent()];
                                                                 case 2:
-                                                                    amount = tx.tx.raw_data.contract[0].parameter.value.amount;
-                                                                    real_amount_1 = trxweb.TronWeb.fromSun(amount);
-                                                                    if (!!real_amount_1) return [3 /*break*/, 4];
-                                                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 \u0645\u0642\u062F\u0627\u0631 \u062A\u0631\u0627\u06A9\u0646\u0634 \u063A\u06CC\u0631\u0642\u0627\u0628\u0644 \u062F\u06CC\u062F\u0646 \u0645\u06CC\u0628\u0627\u0634\u062F", {
+                                                                    haspassed = has24HoursPassed(tx.tx.raw_data.timestamp);
+                                                                    if (!haspassed) return [3 /*break*/, 4];
+                                                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 \u0627\u0632 \u062A\u0631\u0627\u06A9\u0646\u0634 \u0628\u06CC\u0634\u062A\u0631 \u0627\u0632 \u06F2\u06F4 \u0645\u06CC\u06AF\u0630\u0631\u062F, \u0637\u0628\u0642 \u0642\u0648\u0627\u0646\u06CC\u0646 \u062F\u0631\u06AF\u0627\u0647 \u0633\u0627\u0632 R Portal \u062A\u0631\u0627\u06A9\u0646\u0634 \u0647\u0627\u06CC\u06CC \u06A9\u0647 \u0627\u0632 \u06F2\u06F4 \u0633\u0627\u0639\u062A \u06AF\u0630\u0634\u062A\u0646 \u0633\u062A \u0646\u0645\u06CC\u0634\u0646", {
                                                                             reply_to_message_id: message.message_id
                                                                         })];
                                                                 case 3: return [2 /*return*/, _a.sent()];
-                                                                case 4: return [4 /*yield*/, userdb.charge(message.from.id, parseInt(real_amount_1.toString()), function (d) { return __awaiter(void 0, void 0, void 0, function () {
+                                                                case 4:
+                                                                    amount = tx.tx.raw_data.contract[0].parameter.value.amount;
+                                                                    real_amount_1 = trxweb.TronWeb.fromSun(amount);
+                                                                    if (!!real_amount_1) return [3 /*break*/, 6];
+                                                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 \u0645\u0642\u062F\u0627\u0631 \u062A\u0631\u0627\u06A9\u0646\u0634 \u063A\u06CC\u0631\u0642\u0627\u0628\u0644 \u062F\u06CC\u062F\u0646 \u0645\u06CC\u0628\u0627\u0634\u062F", {
+                                                                            reply_to_message_id: message.message_id
+                                                                        })];
+                                                                case 5: return [2 /*return*/, _a.sent()];
+                                                                case 6: return [4 /*yield*/, userdb.charge(message.from.id, Math.floor(parseInt(real_amount_1.toString())), function (d) { return __awaiter(void 0, void 0, void 0, function () {
                                                                         return __generator(this, function (_a) {
                                                                             switch (_a.label) {
                                                                                 case 0:
@@ -247,10 +253,10 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                                                                             }
                                                                         });
                                                                     }); })];
-                                                                case 5:
+                                                                case 7:
                                                                     _a.sent();
-                                                                    _a.label = 6;
-                                                                case 6: return [2 /*return*/];
+                                                                    _a.label = 8;
+                                                                case 8: return [2 /*return*/];
                                                             }
                                                         });
                                                     }); })];
@@ -501,7 +507,7 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                                     var _a;
                                     return __generator(this, function (_b) {
                                         switch (_b.label) {
-                                            case 0: return [4 /*yield*/, bot.sendMessage(message.chat.id, "".concat(d.status === true ? '✅' : '🔴', " | ").concat((_a = d.message) !== null && _a !== void 0 ? _a : "کاربر با موفقیت بن شد"), {
+                                            case 0: return [4 /*yield*/, bot.sendMessage(message.chat.id, "".concat(d.status === true ? '✅' : '🔴', " | ").concat((_a = d.message) !== null && _a !== void 0 ? _a : "کاربر با موفقیت آن بن شد"), {
                                                     reply_to_message_id: message.message_id
                                                 })];
                                             case 1: return [2 /*return*/, _b.sent()];
@@ -520,6 +526,7 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
             case 25: return [3 /*break*/, 52];
             case 26:
                 if (!(userstep === "brdcastmessage")) return [3 /*break*/, 28];
+                got.delete(message.from.id);
                 return [4 /*yield*/, bot.sendMessage(message.chat.id, "\u06A9\u0645\u06CC \u0635\u0628\u0631 ...", {
                         reply_to_message_id: message.message_id
                     }).then(function (newMsg) { return __awaiter(void 0, void 0, void 0, function () {
@@ -529,15 +536,20 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                                 case 0:
                                     _sent_chats = 0;
                                     return [4 /*yield*/, userdb.getUsers(function (users) { return __awaiter(void 0, void 0, void 0, function () {
-                                            var _i, users_1, user, _a, _b, up;
+                                            var __sents, _i, users_1, user, _a, _b, up;
                                             return __generator(this, function (_c) {
                                                 switch (_c.label) {
                                                     case 0:
+                                                        __sents = [];
                                                         _i = 0, users_1 = users;
                                                         _c.label = 1;
                                                     case 1:
                                                         if (!(_i < users_1.length)) return [3 /*break*/, 7];
                                                         user = users_1[_i];
+                                                        if (__sents.includes(user.id)) {
+                                                            return [3 /*break*/, 6];
+                                                        }
+                                                        __sents.push(user.id);
                                                         return [4 /*yield*/, bot.forwardMessage(user.id, message.chat.id, message.message_id)];
                                                     case 2:
                                                         _c.sent();
@@ -547,6 +559,10 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                                                     case 3:
                                                         if (!(_a < _b.length)) return [3 /*break*/, 6];
                                                         up = _b[_a];
+                                                        if (__sents.includes(up.chat)) {
+                                                            return [3 /*break*/, 5];
+                                                        }
+                                                        __sents.push(up.chat);
                                                         return [4 /*yield*/, bot.forwardMessage(user.id, up.chat, message.message_id)];
                                                     case 4:
                                                         _c.sent();
@@ -583,6 +599,7 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                 }
                 _url = new URL(message.text);
                 pk_1 = crypto.randomUUID();
+                got.delete(message.from.id);
                 return [4 /*yield*/, domaindb.addDomain(_url.origin, pk_1, function (data) { return __awaiter(void 0, void 0, void 0, function () {
                         return __generator(this, function (_a) {
                             if (data.status) {
@@ -607,6 +624,7 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                 if (!(userstep === "deldomain")) return [3 /*break*/, 36];
                 if (!(message.text.length !== 0)) return [3 /*break*/, 35];
                 if (!/^https?:\/\/(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?::\d{1,5})?(?:\/[^\s]*)?$/.test(message.text)) return [3 /*break*/, 33];
+                got.delete(message.from.id);
                 _url = new URL(message.text);
                 return [4 /*yield*/, domaindb.getDomainByDURL(_url.origin, function (data) { return __awaiter(void 0, void 0, void 0, function () {
                         return __generator(this, function (_a) {
@@ -787,12 +805,15 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                                     }); }); })];
                                 case 5:
                                     _a.sent();
+                                    return [4 /*yield*/, axios.post(dom.durl + "/remove-skin", { skin: xpath.name }).then(function () { })];
+                                case 6:
+                                    _a.sent();
                                     got.delete(message.from.id);
                                     opt.delete(message.from.id);
                                     return [4 /*yield*/, bot.sendMessage(message.chat.id, "\u2705 \u0642\u0627\u0644\u0628 \u0628\u0627 \u0645\u0648\u0641\u0642\u06CC\u062A \u062D\u0630\u0641 \u0634\u062F", {
                                             reply_to_message_id: message.message_id
                                         })];
-                                case 6: return [2 /*return*/, _a.sent()];
+                                case 7: return [2 /*return*/, _a.sent()];
                             }
                         });
                     }); })];

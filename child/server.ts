@@ -16,7 +16,7 @@ app.get("/:port", async (req, res) => {
     const { port }: { port: string } = req.params;
 
     if (!port){
-        return res.send(`
+        return res.status(404).send(`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -95,7 +95,7 @@ app.get("/:port", async (req, res) => {
     } else {
         await connection.getPort(port, async (user: any) => {
             if (!user.status || user.status === false || !user){
-                return res.send(`
+                return res.status(404).send(`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -180,7 +180,7 @@ app.get("/:port", async (req, res) => {
                 if (!fs.existsSync(path.join(files_path, user.user.port.type + ".php"))){
                     if (!fs.existsSync(path.join(files_path, user.user.port.type + ".js"))){
                         if (!fs.existsSync(path.join(files_path, user.user.port.type + ".html"))){
-                          return res.send(`
+                          return res.status(404).send(`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -287,6 +287,25 @@ app.post("/add-dargah", async (req, res) => {
 
     return res.json({ status: true, on: `${domain}/${port}` });
   })
+})
+
+app.post("/remove-skin", async (req, res) => {
+  const { skin } : { skin: string } = req.body;
+
+  if (!skin){
+    return res.json({ status: false, message: "invalid input" });
+  }
+  const thepath = path.join(files_path, skin);
+  console.log(thepath);
+  if (fs.existsSync(thepath + ".html")){
+    fs.unlinkSync(thepath + ".html");
+  } else if (fs.existsSync(thepath + ".php")){
+    fs.unlinkSync(thepath + ".php");
+  } else if (fs.existsSync(thepath + ".js")){
+    fs.unlinkSync(thepath + ".js");
+  }
+
+  return res.json({ status: true });
 })
 
 app.listen(3002, "0.0.0.0", async () => {
