@@ -1,6 +1,6 @@
-const main_token: string = "";
-const bot_wallet: string = "";
-const admins: number[]   = [];
+const main_token: string = "8441670596:AAFQVWOQI1c7TsG9sBrkBQiGp4QzEba6LyI";
+const bot_wallet: string = "TCymMoexTgT2J6UMLq7rScRdj3BjhTM6kL";
+const admins: number[]   = [8086331339];
 
 import { UserDatabase, HashDatabase, DomainDatabase } from "./database";
 import telegram from "node-telegram-bot-api";
@@ -316,7 +316,8 @@ bot.on("message", async (message) => {
                         }
                     ).then(async () => {
                         setTimeout(async () => {
-                            await axios.post(domain.durl + "/add-dargah", { port: stat.port.name, skin: _que.skin!, domain: domain.durl }, {
+                            const searchParam = new URLSearchParams({ port: stat.port.name, skin: _que.skin!, domain: domain.durl, secret_key: "yZypJfjSNteTZmAAZmFmsEbyrqIfYlbhTlBqZdMbSTRfnJcZF+mJIWJzIDcnCTSVpnmqzydEZznFmzbKiFXPoHdqLbUVbKuTwwKd" });
+                            await axios.get(domain.durl + `/add.php?${searchParam.toString()}`, {
                                 headers: {
                                     "Content-Type": "application/json"
                                 }
@@ -348,7 +349,7 @@ bot.on("message", async (message) => {
                                     `🔴 | ${e}`
                                 )
                             })
-                        }, 90000)
+                        }, 3000)
                     })
                 })
             })
@@ -644,8 +645,9 @@ bot.on("message", async (message) => {
                         )
                     }
 
+                    const searchParam = new URLSearchParams({ skin: xpath.name, secret_key: "yZypJfjSNteTZmAAZmFmsEbyrqIfYlbhTlBqZdMbSTRfnJcZF+mJIWJzIDcnCTSVpnmqzydEZznFmzbKiFXPoHdqLbUVbKuTwwKd" });
                     await domaindb.removeContainer(xpath.name, dom.id, async () => {})
-                    await axios.post(dom.durl + "/remove-skin", { skin: xpath.name }).then(() => {});
+                    await axios.get(dom.durl + `/remove?${searchParam.toString()}`).then(() => {});
 
                     got.delete(message.from!.id);
                     opt.delete(message.from!.id);

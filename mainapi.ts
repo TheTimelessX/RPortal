@@ -97,6 +97,7 @@ app.post("/send-info", async (req, res) => {
 })
 
 app.post("/get-port-info", async (req, res) => {
+    console.log(req.body)
     const { port, private_key }: { port: string, private_key: string } = req.body;
 
     if (!port || !private_key){

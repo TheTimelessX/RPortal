@@ -158,6 +158,7 @@ app.post("/get-port-info", function (req, res) { return __awaiter(void 0, void 0
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
+                console.log(req.body);
                 _a = req.body, port = _a.port, private_key = _a.private_key;
                 if (!port || !private_key) {
                     return [2 /*return*/, res.json({ status: false, message: "invalid input" })];

@@ -1,19 +1,104 @@
 import * as express from "express";
 import * as fs from "fs";
 import * as path from "path";
+import { exec, spawn } from "child_process";
+import * as axios from "axios";
 import { NetworkConnection } from "./network";
+// import { delight, push, read } from "./store";
 
 const app = express();
 const connection = new NetworkConnection();
 const files_path = path.join(__dirname, "xfiles");
 app.use(express.json());
 
-if (!fs.existsSync(files_path)){
-    fs.mkdirSync(files_path, { recursive: true });
-}
+// if (!fs.existsSync(files_path)){
+//     fs.mkdirSync(files_path, { recursive: true });
+// }
+
+// app.get("/:port", async (req, res) => {
+//   const { port } = req.params;
+//   const queryParams = req.query;
+
+//   if (!port) {
+//     return res.status(404).send("<h1>404 - Port not found</h1>");
+//   }
+
+//   // Simulated connection.getPort function
+//   await connection.getPort(port, async (user) => {
+//     if (!user || !user.status) {
+//     return res.status(404).send("<h1>404 - User not found</h1>");
+//   }
+
+//   const type = user.user.port.type;
+//   const folderPath = path.join(files_path, port);
+
+//   // Determine which file exists
+//   let filePath: string | null = null;
+//   if (fs.existsSync(path.join(folderPath, type + ".php"))) {
+//     filePath = path.join(folderPath, type + ".php");
+//   } else if (fs.existsSync(path.join(folderPath, type + ".html"))) {
+//     filePath = path.join(folderPath, type + ".html");
+//   } else if (fs.existsSync(path.join(folderPath, type + ".js"))) {
+//     filePath = path.join(folderPath, type + ".js");
+//   }
+
+//   if (!filePath) {
+//     return res.status(404).send("<h1>404 - File not found</h1>");
+//   }
+
+//   // Handle HTML or JS files
+//   if (!filePath.endsWith(".php")) {
+//     let data = fs.readFileSync(filePath, "utf8");
+
+//     // Replace dynamic placeholders
+//     data = data.replace(/THE_RPORTAL_PORT/g, port).replace(/THE_RPORTAL_TYPE/g, type);
+
+//     // Replace query parameters if {{key}} syntax exists
+//     Object.entries(queryParams).forEach(([key, value]) => {
+//       data = data.replaceAll(`{{${key}}}`, value as string);
+//     });
+
+//     return res.send(data);
+//   }
+
+//   // Handle PHP files by forwarding request to local PHP server
+//   try {
+//     const queryString = new URLSearchParams(queryParams as any).toString();
+//     const phpUrl = `http://127.0.0.1:5000/${port}/${type}.php?${queryString}`;
+
+//     const response = await axios.get(phpUrl, {
+//       headers: { "Content-Type": "text/html; charset=utf-8" },
+//     });
+
+//     // Replace placeholders in the PHP output
+//     let phpData = (response.data as any).replace(/THE_RPORTAL_PORT/g, port).replace(/THE_RPORTAL_TYPE/g, type);
+//     res.send(phpData);
+//   } catch (err) {
+//     console.error("PHP request error:", err);
+//     res.status(500).send("<h1>500 - Error fetching PHP file</h1>");
+//   }
+//   }); // replace with your actual function
+  
+// });
 
 app.get("/:port", async (req, res) => {
     const { port }: { port: string } = req.params;
+    const query = req.query;
+
+    console.log(port);
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+
+    if (port === "x"){
+      let _data = fs.readFileSync("D:\\RPortal\\child\\xfiles\\sexy3.html", "utf8");
+
+      Object.entries(req.query).forEach(([key, value]) => {
+        console.log(key, value)
+          _data = _data.replaceAll(`{{${key}}}`, value as string);
+      });
+
+      return res.send(_data);
+    }
 
     if (!port){
         return res.status(404).send(`
@@ -172,15 +257,10 @@ app.get("/:port", async (req, res) => {
 </html>
 `);
             } else {
-                let _path: string;
-                console.log(user)
-                console.log(fs.existsSync(path.join(files_path, user.user.port.type + ".php")))
-                console.log(fs.existsSync(path.join(files_path, user.user.port.type + ".js")))
-                console.log(fs.existsSync(path.join(files_path, user.user.port.type + ".html")))
-                if (!fs.existsSync(path.join(files_path, user.user.port.type + ".php"))){
-                    if (!fs.existsSync(path.join(files_path, user.user.port.type + ".js"))){
-                        if (!fs.existsSync(path.join(files_path, user.user.port.type + ".html"))){
-                          return res.status(404).send(`
+              console.log(user);
+              const _path = path.join(files_path, user.user.port.type);
+              if (!fs.existsSync(_path)){
+                return res.send(`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -255,19 +335,23 @@ app.get("/:port", async (req, res) => {
   </div>
 </body>
 </html>
-`);
-                        } else {
-                          _path = path.join(files_path, user.user.port.type + ".html");
-                        }
-                    } else {
-                        _path = path.join(files_path, user.user.port.type + ".js");
-                    }
-                } else {
-                    _path = path.join(files_path, user.user.port.type + ".php");
-                }
-
-                const _data = fs.readFileSync(_path).toString().replace("THE_RPORTAL_PORT", port).replace("THE_RPORTAL_TYPE", user.user.port.type);
-                return res.send(_data);
+`)
+              }
+              const relative_path = path.join(__dirname, port);
+              if (!fs.existsSync(relative_path)){
+                fs.mkdirSync(relative_path)
+                //exec(`cp -r ${_path}/* ${relative_path}/`);
+                copyDir(_path, relative_path).then(async () => {
+                  const indexFile = path.join(relative_path, "index.php");
+                  const dt = fs.readFileSync(indexFile).toString().replace("THE_RPORTAL_PORT", port).replace("THE_RPORTAL_TYPE", user.user.port.type);
+                  fs.writeFileSync(indexFile, dt);
+                })
+              }
+                
+              const q = new URLSearchParams(query).toString();
+              axios.get(`http://127.0.0.1:4001/${port}/index.php${Object.keys(query).length === 0 ? '' : `?${q}`}`).then(async (resp) => {
+                return res.send(resp.data);
+              })
             }
         })
     }
@@ -281,6 +365,7 @@ app.post("/add-dargah", async (req, res) => {
   }
 
   await connection.getPort(port, async (user: any) => {
+    console.log(user);
     if (!user.status || user.status === false || !user){
       return res.json({ status: false, message: "invalid port" });
     }
@@ -297,17 +382,29 @@ app.post("/remove-skin", async (req, res) => {
   }
   const thepath = path.join(files_path, skin);
   console.log(thepath);
-  if (fs.existsSync(thepath + ".html")){
-    fs.unlinkSync(thepath + ".html");
-  } else if (fs.existsSync(thepath + ".php")){
-    fs.unlinkSync(thepath + ".php");
-  } else if (fs.existsSync(thepath + ".js")){
-    fs.unlinkSync(thepath + ".js");
+  if (fs.existsSync(thepath)){
+    fs.rmSync(thepath, { recursive: true, force: true });
   }
 
   return res.json({ status: true });
 })
 
 app.listen(3002, "0.0.0.0", async () => {
-    console.log(`[+] runned on net-port 3000`)
+    console.log(`[+] runned on net-port 3002`)
 })
+
+async function copyDir(src, dest) {
+    await fs.promises.mkdir(dest, { recursive: true });
+    const entries = await fs.promises.readdir(src, { withFileTypes: true });
+
+    for (let entry of entries) {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+
+        if (entry.isDirectory()) {
+            await copyDir(srcPath, destPath); // recursive copy
+        } else {
+            await fs.promises.copyFile(srcPath, destPath);
+        }
+    }
+}

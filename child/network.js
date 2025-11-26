@@ -49,7 +49,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NetworkConnection = void 0;
 var main_api = "http://127.0.0.1:3000";
-var private_key = "2be44e54-a568-4c6f-8d1c-0e03b7d08f10";
+var private_key = "e1212bae-6fa2-4faf-92bd-decbf3220473";
 var server_number = 1;
 var axios = require("axios");
 var NetworkConnection = /** @class */ (function () {

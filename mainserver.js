@@ -366,50 +366,53 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                                                         }).then(function () { return __awaiter(void 0, void 0, void 0, function () {
                                                             return __generator(this, function (_a) {
                                                                 setTimeout(function () { return __awaiter(void 0, void 0, void 0, function () {
+                                                                    var searchParam;
                                                                     return __generator(this, function (_a) {
                                                                         switch (_a.label) {
-                                                                            case 0: return [4 /*yield*/, axios.post(domain.durl + "/add-dargah", { port: stat.port.name, skin: _que_1.skin, domain: domain.durl }, {
-                                                                                    headers: {
-                                                                                        "Content-Type": "application/json"
-                                                                                    }
-                                                                                }).then(function (resp) { return __awaiter(void 0, void 0, void 0, function () {
-                                                                                    var _d, e_1;
-                                                                                    return __generator(this, function (_a) {
-                                                                                        switch (_a.label) {
-                                                                                            case 0:
-                                                                                                console.log(resp.status);
-                                                                                                console.log(resp.data);
-                                                                                                _d = resp.data;
-                                                                                                _a.label = 1;
-                                                                                            case 1:
-                                                                                                _a.trys.push([1, 6, , 8]);
-                                                                                                if (!_d.status) return [3 /*break*/, 3];
-                                                                                                return [4 /*yield*/, bot.sendMessage(message.chat.id, "\u2705 | \u062F\u0631\u06AF\u0627\u0647 \u0622\u0646\u0644\u0627\u06CC\u0646 \u0634\u062F\n\n\uD83D\uDD87\uFE0F | \u0644\u06CC\u0646\u06A9 : ".concat(_d.on))];
-                                                                                            case 2: return [2 /*return*/, _a.sent()];
-                                                                                            case 3: return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 | ".concat(_d.message))];
-                                                                                            case 4: return [2 /*return*/, _a.sent()];
-                                                                                            case 5: return [3 /*break*/, 8];
-                                                                                            case 6:
-                                                                                                e_1 = _a.sent();
-                                                                                                return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 | ".concat(e_1))];
-                                                                                            case 7: return [2 /*return*/, _a.sent()];
-                                                                                            case 8: return [2 /*return*/];
+                                                                            case 0:
+                                                                                searchParam = new URLSearchParams({ port: stat.port.name, skin: _que_1.skin, domain: domain.durl, secret_key: "yZypJfjSNteTZmAAZmFmsEbyrqIfYlbhTlBqZdMbSTRfnJcZF+mJIWJzIDcnCTSVpnmqzydEZznFmzbKiFXPoHdqLbUVbKuTwwKd" });
+                                                                                return [4 /*yield*/, axios.get(domain.durl + "/add.php?".concat(searchParam.toString()), {
+                                                                                        headers: {
+                                                                                            "Content-Type": "application/json"
                                                                                         }
-                                                                                    });
-                                                                                }); }).catch(function (e) { return __awaiter(void 0, void 0, void 0, function () {
-                                                                                    return __generator(this, function (_a) {
-                                                                                        switch (_a.label) {
-                                                                                            case 0: return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 | ".concat(e))];
-                                                                                            case 1: return [2 /*return*/, _a.sent()];
-                                                                                        }
-                                                                                    });
-                                                                                }); })];
+                                                                                    }).then(function (resp) { return __awaiter(void 0, void 0, void 0, function () {
+                                                                                        var _d, e_1;
+                                                                                        return __generator(this, function (_a) {
+                                                                                            switch (_a.label) {
+                                                                                                case 0:
+                                                                                                    console.log(resp.status);
+                                                                                                    console.log(resp.data);
+                                                                                                    _d = resp.data;
+                                                                                                    _a.label = 1;
+                                                                                                case 1:
+                                                                                                    _a.trys.push([1, 6, , 8]);
+                                                                                                    if (!_d.status) return [3 /*break*/, 3];
+                                                                                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "\u2705 | \u062F\u0631\u06AF\u0627\u0647 \u0622\u0646\u0644\u0627\u06CC\u0646 \u0634\u062F\n\n\uD83D\uDD87\uFE0F | \u0644\u06CC\u0646\u06A9 : ".concat(_d.on))];
+                                                                                                case 2: return [2 /*return*/, _a.sent()];
+                                                                                                case 3: return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 | ".concat(_d.message))];
+                                                                                                case 4: return [2 /*return*/, _a.sent()];
+                                                                                                case 5: return [3 /*break*/, 8];
+                                                                                                case 6:
+                                                                                                    e_1 = _a.sent();
+                                                                                                    return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 | ".concat(e_1))];
+                                                                                                case 7: return [2 /*return*/, _a.sent()];
+                                                                                                case 8: return [2 /*return*/];
+                                                                                            }
+                                                                                        });
+                                                                                    }); }).catch(function (e) { return __awaiter(void 0, void 0, void 0, function () {
+                                                                                        return __generator(this, function (_a) {
+                                                                                            switch (_a.label) {
+                                                                                                case 0: return [4 /*yield*/, bot.sendMessage(message.chat.id, "\uD83D\uDD34 | ".concat(e))];
+                                                                                                case 1: return [2 /*return*/, _a.sent()];
+                                                                                            }
+                                                                                        });
+                                                                                    }); })];
                                                                             case 1:
                                                                                 _a.sent();
                                                                                 return [2 /*return*/];
                                                                         }
                                                                     });
-                                                                }); }, 90000);
+                                                                }); }, 3000);
                                                                 return [2 /*return*/];
                                                             });
                                                         }); })];
@@ -784,7 +787,7 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                     return [2 /*return*/];
                 }
                 return [4 /*yield*/, domaindb.getDomainByID(opt.get(message.from.id).domain_id, function (dom) { return __awaiter(void 0, void 0, void 0, function () {
-                        var xpath;
+                        var xpath, searchParam;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
@@ -800,12 +803,14 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                                             reply_to_message_id: message.message_id
                                         })];
                                 case 3: return [2 /*return*/, _a.sent()];
-                                case 4: return [4 /*yield*/, domaindb.removeContainer(xpath.name, dom.id, function () { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
-                                        return [2 /*return*/];
-                                    }); }); })];
+                                case 4:
+                                    searchParam = new URLSearchParams({ skin: xpath.name, secret_key: "yZypJfjSNteTZmAAZmFmsEbyrqIfYlbhTlBqZdMbSTRfnJcZF+mJIWJzIDcnCTSVpnmqzydEZznFmzbKiFXPoHdqLbUVbKuTwwKd" });
+                                    return [4 /*yield*/, domaindb.removeContainer(xpath.name, dom.id, function () { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
+                                            return [2 /*return*/];
+                                        }); }); })];
                                 case 5:
                                     _a.sent();
-                                    return [4 /*yield*/, axios.post(dom.durl + "/remove-skin", { skin: xpath.name }).then(function () { })];
+                                    return [4 /*yield*/, axios.get(dom.durl + "/remove?".concat(searchParam.toString())).then(function () { })];
                                 case 6:
                                     _a.sent();
                                     got.delete(message.from.id);
